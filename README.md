@@ -4,3 +4,5 @@ SpotifyJam
     npm install sleep
     cd src
     node UserUtils.js
+
+TODO: Create server room handler
