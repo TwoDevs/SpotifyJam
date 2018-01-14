@@ -1,8 +1,10 @@
 SpotifyJam
+---
 
-    npm install applescript
-    npm install sleep
-    cd src
-    node UserUtils.js
+Server
+    cd server
+    npm install
+    npm start
+
 
 TODO: Create server room handler

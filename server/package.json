@@ -1,0 +1,32 @@
+{
+  "name": "src",
+  "version": "1.0.0",
+  "description": "Listen to spotify jams with friends!",
+  "main": "server.js",
+  "dependencies": {
+    "applescript": "^1.0.0",
+    "shortid": "^2.2.8",
+    "sleep": "^5.1.1",
+    "socket.io": "^2.0.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "node server.js",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DanielKhasanov/SpotifyJam.git"
+  },
+  "keywords": [
+    "spotify",
+    "jam",
+    "node"
+  ],
+  "author": "Daniel Khasanov, Kevin Do",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/DanielKhasanov/SpotifyJam/issues"
+  },
+  "homepage": "https://github.com/DanielKhasanov/SpotifyJam#readme"
+}
