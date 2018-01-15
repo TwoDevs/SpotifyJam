@@ -1,37 +1,38 @@
 import React, { Component } from 'react';
-import Websocket from 'react-websocket';
+//import Websocket from 'react-websocket';
+import socketIOClient from "socket.io-client";
 
 class App extends Component {
   constructor(props){
     super(props);
     this.state = {
-      testData: "Test message here",
-      connected: false
+      connected: false,
+      endpoint: 'http://localhost:3000'
     };
   }
 
-  handleTestMessage = (data) => {
-    let result = JSON.parse(data);
-    this.setState({
-      testData: {result}
+  componentDidMount(){
+    const {endpoint} = this.state;
+    const socket = socketIOClient(endpoint);
+    
+    socket.on("connect", () => {
+      console.log("Connected");
+      this.setState({
+        connected: true
+      });
     });
-  }
-
-  handleConnected = (data) => {
-    let result = JSON.parse(data);
-    this.setState({
-      connected: result
-    });
+    
   }
 
   render() {
     return (
       <div>
-        <h1> Simple Rick </h1>
-        <Websocket
-          url =''
-          onMessage = {this.handleTestMessage}
-          onOpen = {this.handleConnected}/>
+        <h1> Spotify Jam Prototype </h1>
+        <hr/>
+        <h3> Connected: {this.state.connected.toString()}</h3>
+        <p> Endpoint IP: {this.state.endpoint}</p>
+        <br/>
+        <br/>
       </div>
     );
   }
