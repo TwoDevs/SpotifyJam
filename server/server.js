@@ -13,7 +13,8 @@ console.log("Server Started - Port: " + defaultPort);
 console.log(  "---------------------------")
 
 io.on('connection', function(socket){
-
+    socket.emit('news', { hello: 'world' });
+    
     //instantiate member
     var thisMemberId = shortid.generate();
     console.log("\n\n~ Connection Created - Player " +  thisMemberId + " | Connected to socket: " + socket.id + " ~");
@@ -21,7 +22,7 @@ io.on('connection', function(socket){
 
     //broadcast track info to room
     socket.on('sync', function(data){
-        socket.broadcast.emit('synch', data);
+        socket.broadcast.emit('sync', data);
     });
 
     socket.on('disconnect', function(){
