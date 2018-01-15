@@ -1,18 +1,37 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import Websocket from 'react-websocket';
 
 class App extends Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      testData: "Test message here",
+      connected: false
+    };
+  }
+
+  handleTestMessage = (data) => {
+    let result = JSON.parse(data);
+    this.setState({
+      testData: {result}
+    });
+  }
+
+  handleConnected = (data) => {
+    let result = JSON.parse(data);
+    this.setState({
+      connected: result
+    });
+  }
+
   render() {
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
+      <div>
+        <h1> Simple Rick </h1>
+        <Websocket
+          url =''
+          onMessage = {this.handleTestMessage}
+          onOpen = {this.handleConnected}/>
       </div>
     );
   }
