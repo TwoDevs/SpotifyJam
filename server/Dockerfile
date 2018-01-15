@@ -1,6 +1,6 @@
 FROM node:carbon
 
-WORKDIR /Users/danielkhasanov/Desktop/SpotifyJam/src
+WORKDIR /Users/danielkhasanov/Desktop/SpotifyJam/server/
 
 # Install app dependencies
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
