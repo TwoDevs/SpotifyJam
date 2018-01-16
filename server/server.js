@@ -154,12 +154,21 @@ app.get('/refresh_token', function(req, res) {
 
 //Websocket Functions
 io.on('connection', function(socket){
-    socket.emit('news', { hello: 'world' });
-    
     //instantiate member
     var thisMemberId = shortid.generate();
-    console.log("\n\n~ Connection Created - Player " +  thisMemberId + " | Connected to socket: " + socket.id + " ~");
+    console.log("\n\n~ Connection Created - Member " +  thisMemberId + " | Connected to socket: " + socket.id + " ~");
     members.push(thisMemberId);
+
+    // No admins yet, add admin
+    console.log("Admins:");
+    console.log(admins.length);
+    if (admins.length == 0) {
+        admins.push(thisMemberId);
+        socket.emit('config', { isAdmin: true });
+    } else {
+        socket.emit('config', { isAdmin: false });
+    }
+    
 
     //broadcast track info to room
     socket.on('sync', function(data){
@@ -170,7 +179,12 @@ io.on('connection', function(socket){
         console.log("\n\n~ Player " + thisMemberId + " is Disconnecting. ~");
         var memberIndex = members.indexOf(thisMemberId);
         members.splice(memberIndex, 1);
+        var adminIndex = admins.indexOf(thisMemberId);
+        if (adminIndex >= 0) {
+            admins.splice(adminIndex, 1);
+        }
         socket.broadcast.emit('disconnected', {id: thisMemberId});
         console.log("Updated member list: " + members);
+        console.log("Updated admin list: " + admins);
     });
 });
