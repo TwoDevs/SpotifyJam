@@ -5,6 +5,10 @@
   "main": "server.js",
   "dependencies": {
     "applescript": "^1.0.0",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.16.2",
+    "querystring": "^0.2.0",
+    "request": "^2.83.0",
     "shortid": "^2.2.8",
     "sleep": "^5.1.1",
     "socket.io": "^2.0.4",

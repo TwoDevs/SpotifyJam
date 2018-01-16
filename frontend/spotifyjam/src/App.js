@@ -7,7 +7,7 @@ class App extends Component {
     super(props);
     this.state = {
       connected: false,
-      endpoint: 'http://localhost:3000'
+      endpoint: 'http://localhost:8000'
     };
   }
 
