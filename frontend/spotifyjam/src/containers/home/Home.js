@@ -4,10 +4,15 @@ import { bindActionCreator } from 'redux';
 import { Link } from 'react-router-dom';
 
 import socketIOClient from "socket.io-client";
+
+import {get_sync_dict_from_json} from '../../playerUtil';
+
 const queryString = require('query-string');
 
 var SpotifyWebAPI = require("spotify-web-api-js");
 var spotifyAPI = new SpotifyWebAPI();
+
+
 
 class Home extends Component {
     constructor(props){
@@ -47,10 +52,20 @@ class Home extends Component {
             isAdmin: data.isAdmin
           });
         });
+
+        socket.on("sync", (sync_data) =>{
+          console.log("Received Sync!");
+          console.log(sync_data);
+          spotifyAPI.getMyCurrentPlayingTrack( function(err, my_data) {
+            if (err) console.error(err);
+            else console.log(get_sync_dict_from_json(my_data, sync_data)) ;
+          });
+
+        });
         
         setInterval(() => {
           if(this.state.isAdmin){
-              this.sendSync();
+              this.sendSync(socket);
           }
         },timeInterval);
     
@@ -73,11 +88,13 @@ class Home extends Component {
         }
       }
 
-      sendSync = () => {
-          
+      sendSync = (socket) => {
+        // get Elvis' albums, passing a callback. When a callback is passed, no Promise is returned
+        spotifyAPI.getMyCurrentPlayingTrack( function(err, data) {
+          if (err) console.error(err);
+          else socket.emit('sync',data);
+        });
       }
-    
-    
     
       gatherPlayerData = () => {
     

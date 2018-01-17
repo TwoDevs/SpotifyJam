@@ -89,9 +89,9 @@ const get_sync_dict = function(my_uri, my_timestamp, my_progress_ms, my_is_playi
         //Do not try to predict player position if too far away
         if (my_uri !== sync_uri) {
             syncReq["uri"] = sync_uri;
-            syncReq["progress"] = sync_progress;
-        } else if (my_progress !== sync_progress) {
-            syncReq["progress"] = sync_progress;
+            syncReq["progress"] = sync_progress_ms;
+        } else if (my_progress_ms !== sync_progress_ms) {
+            syncReq["progress"] = sync_progress_ms;
         }
         if (my_is_playing !== sync_is_playing) {
             syncReq["is_playing"] = sync_is_playing;
@@ -103,11 +103,11 @@ const get_sync_dict = function(my_uri, my_timestamp, my_progress_ms, my_is_playi
 
         if (my_uri !== sync_uri) {
             //Case 1: We are finishing a track and sync started a different track
-            behind_sync_ms += sync_progress;
-            behind_sync_ms += my_duration_ms - my_progress;
+            behind_sync_ms += sync_progress_ms;
+            behind_sync_ms += my_duration_ms - my_progress_ms;
         } else { 
             //Case 2: We are on the same track, can be ahead or behind
-            behind_sync_ms += my_progress - sync_progress;
+            behind_sync_ms += my_progress_ms - sync_progress_ms;
         }
 
         if (Math.abs(behind_sync_ms) > MAX_DELTA_MS) { 
@@ -115,10 +115,10 @@ const get_sync_dict = function(my_uri, my_timestamp, my_progress_ms, my_is_playi
             if (my_uri !== sync_uri) { 
                 // Change Tracks
                 syncReq["uri"] = sync_uri;
-                syncReq["progress"] = sync_progress + time_delay_ms;
-            } else if (my_progress !== sync_progress) {
+                syncReq["progress"] = sync_progress_ms + time_delay_ms;
+            } else if (my_progress_ms !== sync_progress_ms) {
                 //Change player position
-                syncReq["progress"] = sync_progress + time_delay_ms;
+                syncReq["progress"] = sync_progress_ms + time_delay_ms;
             }
 
             if (my_is_playing !== sync_is_playing) {
@@ -135,22 +135,21 @@ const get_sync_dict = function(my_uri, my_timestamp, my_progress_ms, my_is_playi
     return null;                          
 }
 
-const get_sync_dict_from_json = function(my_json,sync_json) {
-    const my_data = JSON.parse(my_json);
+export const get_sync_dict_from_json = function(my_json,sync_json) {
+    const my_data = my_json;
     const my_uri = my_data.item.uri;
     const my_timestamp = my_data.timestamp;
     const my_progress_ms = my_data.progress_ms;
     const my_is_playing = my_data.is_playing;
     const my_duration_ms = my_data.item.duration_ms;
 
-    const sync_data = JSON.parse(sync_json);
+    const sync_data = sync_json;
     const sync_uri = sync_data.item.uri;
     const sync_timestamp = sync_data.timestamp;
-    const sync_progress = sync_data.progress_ms;
+    const sync_progress_ms = sync_data.progress_ms;
     const sync_is_playing = sync_data.is_playing;
 
     return get_sync_dict(my_uri, my_timestamp, my_progress_ms, my_is_playing, my_duration_ms,
-        sync_data, sync_uri, sync_timestamp, sync_progress, sync_is_playing);
+        sync_data, sync_uri, sync_timestamp, sync_progress_ms, sync_is_playing);
 }
 
-exports.get_sync_dict = get_sync_dict;
