@@ -14,7 +14,7 @@ const App = () => {
         <h1>Header Sample Nav</h1>
           <Link to="/">Home</Link>
           |
-          <a href = "http://localhost:8000/login">Authorize Spotify</a>
+          <a href = "<INSERT SERVER HERE>/login">Authorize Spotify</a>
         </header>
         
         <main>

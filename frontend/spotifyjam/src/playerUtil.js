@@ -76,61 +76,46 @@
   "context": null
 }
     */
-const MAX_DELAY_MS = 5000;
+
 const MAX_DELTA_MS = 2500;
 
 const get_sync_dict = function(my_uri, my_timestamp, my_progress_ms, my_is_playing, my_duration_ms, 
                                     sync_uri, sync_timestamp, sync_progress_ms, sync_is_playing) {
     // the time ahead of sync request and current time in ms
-    let time_delay_ms = my_timestamp - sync_timestamp;
+    let currTime = Date.now();
+    let time_delay_ms = currTime - sync_timestamp;
     let syncReq = {"uri": null, "progress": null, "is_playing": null};
+    
+    //Compute how far behind the sync request we are, adjusted to the time delay
+    let behind_sync_ms = 0;
 
-    if (time_delay_ms > MAX_DELAY_MS) {
-        //Do not try to predict player position if too far away
-        if (my_uri !== sync_uri) {
+    if (my_uri !== sync_uri) {
+        //Case 1: We are finishing a track and sync started a different track
+        behind_sync_ms += sync_progress_ms;
+        behind_sync_ms += my_duration_ms - my_progress_ms;
+        
+    } else { 
+        //Case 2: We are on the same track, can be ahead or behind
+        behind_sync_ms += my_progress_ms - sync_progress_ms;
+    }
+
+    if (Math.abs(behind_sync_ms) > MAX_DELTA_MS) { 
+        //We are behind or ahead too much, need to update state
+        if (my_uri !== sync_uri) { 
+            // Change Tracks
             syncReq["uri"] = sync_uri;
             syncReq["progress"] = sync_progress_ms;
+            syncReq["is_playing"] = sync_is_playing;
         } else if (my_progress_ms !== sync_progress_ms) {
+            //Change player position
             syncReq["progress"] = sync_progress_ms;
-        }
-        if (my_is_playing !== sync_is_playing) {
             syncReq["is_playing"] = sync_is_playing;
         }
-        return syncReq;
-    } else {
-        //Compute how far behind the sync request we are, adjusted to the time delay
-        let behind_sync_ms = -time_delay_ms;
-
-        if (my_uri !== sync_uri) {
-            //Case 1: We are finishing a track and sync started a different track
-            behind_sync_ms += sync_progress_ms;
-            behind_sync_ms += my_duration_ms - my_progress_ms;
-        } else { 
-            //Case 2: We are on the same track, can be ahead or behind
-            behind_sync_ms += my_progress_ms - sync_progress_ms;
+    }
+    for (const key of Object.keys(syncReq)) {
+        if (syncReq[key] !== null) {
+            return syncReq;
         }
-
-        if (Math.abs(behind_sync_ms) > MAX_DELTA_MS) { 
-            //We are behind or ahead too much, need to update state
-            if (my_uri !== sync_uri) { 
-                // Change Tracks
-                syncReq["uri"] = sync_uri;
-                syncReq["progress"] = sync_progress_ms + time_delay_ms;
-            } else if (my_progress_ms !== sync_progress_ms) {
-                //Change player position
-                syncReq["progress"] = sync_progress_ms + time_delay_ms;
-            }
-
-            if (my_is_playing !== sync_is_playing) {
-                syncReq["is_playing"] = sync_is_playing;
-            }
-        }
-        for (const key of Object.keys(syncReq)) {
-            if (syncReq[key] !== null) {
-                return syncReq;
-            }
-        }
-        
     }
     return null;                          
 }
@@ -150,6 +135,6 @@ export const get_sync_dict_from_json = function(my_json,sync_json) {
     const sync_is_playing = sync_data.is_playing;
 
     return get_sync_dict(my_uri, my_timestamp, my_progress_ms, my_is_playing, my_duration_ms,
-        sync_data, sync_uri, sync_timestamp, sync_progress_ms, sync_is_playing);
+       sync_uri, sync_timestamp, sync_progress_ms, sync_is_playing);
 }
 

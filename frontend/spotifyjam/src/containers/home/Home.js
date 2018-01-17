@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import socketIOClient from "socket.io-client";
 
 import {get_sync_dict_from_json} from '../../playerUtil';
+//var devKeys = require('../../../../../server/devKeys');
 
 const queryString = require('query-string');
 
@@ -19,16 +20,38 @@ class Home extends Component {
         super(props);
         this.state = {
           connected: false,
-          endpoint: 'http://localhost:8000',
+          endpoint: 'http://35.226.86.75:8000',
           isAdmin: false,
           accessToken: null
         };
       } 
+      sync_local_player = (sync_data) => {
+        spotifyAPI.getMyCurrentPlayingTrack( function(err, my_data) {
+          if (err) {
+            console.error(err)
+          } else {
+            let dict = get_sync_dict_from_json(my_data, sync_data);
+            if (dict) {
+              if (dict.uri) {
+                let options = {uris:[dict.uri],offset:{position:0} };
+                console.log(options);
+                spotifyAPI.play(options, function(err, data) {console.log(data)});
+              }
+              if (dict.progress) {
+                spotifyAPI.seek(dict.progress, function(err, data) {});
+              }
+              if (dict.is_playing !== null) {
+                if (!dict.is_playing) {
+                  spotifyAPI.pause( function(err, data) {});
+                } 
+              }
+            }
+          };
+        });
+      }
     
       //Lifecycle Functions
-      
       componentDidMount(){
-        
         if (this.props.location.hash){
             const accessToken = queryString.parse(this.props.location.hash).access_token;
             this.setState({
@@ -56,11 +79,7 @@ class Home extends Component {
         socket.on("sync", (sync_data) =>{
           console.log("Received Sync!");
           console.log(sync_data);
-          spotifyAPI.getMyCurrentPlayingTrack( function(err, my_data) {
-            if (err) console.error(err);
-            else console.log(get_sync_dict_from_json(my_data, sync_data)) ;
-          });
-
+          this.sync_local_player(sync_data);
         });
         
         setInterval(() => {
