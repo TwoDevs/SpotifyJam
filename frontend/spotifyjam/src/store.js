@@ -6,7 +6,6 @@ import rootReducer from './modules';
 export const history = createHistory();
 
 const initialState = {};
-const enhancers = [];
 const middleware = [
     routerMiddleware(history)
 ];

@@ -1,11 +1,12 @@
-//Packages and Setup
-var defaultPort = 8000;
+//Express App Set Up
 var express = require('express'); // Express web server framework
 var request = require('request'); // "Request" library
 var app = require('express')();
+
+//Socket.IO Set Up
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
-//var io = require('socket.io')(process.env.PORT || defaultPort);
+var defaultPort = 8000;
 server.listen(defaultPort);
 
 //Third Party Packages
@@ -13,11 +14,10 @@ var shortid = require('shortid');
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
 
-//Key Setup
-var devKeys = require('./devKeys');
-var client_id = devKeys.id; // Your client id
-var client_secret = devKeys.secret; // Your secret
-var redirect_uri = devKeys.redirect_uri; // Your redirect uri
+//Server Mode 
+var devMode = true;
+var {devURLs, productionURLs, client_id, client_secret} = require('./devKeys');
+var {redirect_uri, frontend_url, server_url} = devMode ? devURLs : productionURLs;
 
 //Player Management
 var members = [];
@@ -26,7 +26,10 @@ var admins = [];
 //---Server Start---
 console.log("\n---------------------------")
 console.log("Server Started - Port: " + defaultPort);
-console.log(  "---------------------------")
+var mode = devMode ? "Development Mode" : "Production Mode";
+console.log("\nRunning in", mode);
+console.log(  "---------------------------\n")
+
 
 //Spotify Authorization
 var generateRandomString = function(length) {
@@ -43,15 +46,10 @@ var stateKey = 'spotify_auth_state';
 
 app.use(express.static(__dirname + '/public'))
    .use(cookieParser());
-console.log(__dirname + '/public');
 
 app.get('/login', function(req, res) {
-    console.log("Login Clicked!");
     var state = generateRandomString(16);
-    console.log("State Key: ", state);
     res.cookie(stateKey, state);
-
-    // your application requests authorization
     var scope = 'user-read-currently-playing user-modify-playback-state';
     res.redirect('https://accounts.spotify.com/authorize?' +
         querystring.stringify({
@@ -67,7 +65,6 @@ app.get('/callback', function(req, res) {
 
     // your application requests refresh and access tokens
     // after checking the state parameter
-    console.log("Callback triggered.");
     var code = req.query.code || null;
     var state = req.query.state || null;
     var storedState = req.cookies ? req.cookies[stateKey] : null;
@@ -97,7 +94,6 @@ app.get('/callback', function(req, res) {
 
             var access_token = body.access_token,
                 refresh_token = body.refresh_token;
-            console.log(access_token);
             var options = {
             url: 'https://api.spotify.com/v1/me',
             headers: { 'Authorization': 'Bearer ' + access_token },
@@ -110,7 +106,7 @@ app.get('/callback', function(req, res) {
             // });
 
             // we can also pass the token to the browser to make requests from there
-            res.redirect(devKeys.websiteURL + '/#' +
+            res.redirect(frontend_url + '/#' +
             querystring.stringify({
                 access_token: access_token,
                 refresh_token: refresh_token
@@ -156,11 +152,11 @@ app.get('/refresh_token', function(req, res) {
 io.on('connection', function(socket){
     //instantiate member
     var thisMemberId = shortid.generate();
-    console.log("\n\n~ Connection Created - Member " +  thisMemberId + " | Connected to socket: " + socket.id + " ~");
+    console.log("\n~ Connection Created - Member " +  thisMemberId + " | Connected to socket: " + socket.id + " ~");
     members.push(thisMemberId);
 
     // No admins yet, add admin
-    console.log("Admins:");
+    console.log("Number of Admins: ");
     console.log(admins.length);
     if (admins.length == 0) {
         admins.push(thisMemberId);
@@ -176,7 +172,7 @@ io.on('connection', function(socket){
     });
 
     socket.on('disconnect', function(){
-        console.log("\n\n~ Player " + thisMemberId + " is Disconnecting. ~");
+        console.log("\n~ Player " + thisMemberId + " is Disconnecting. ~");
         var memberIndex = members.indexOf(thisMemberId);
         members.splice(memberIndex, 1);
         var adminIndex = admins.indexOf(thisMemberId);
@@ -184,7 +180,7 @@ io.on('connection', function(socket){
             admins.splice(adminIndex, 1);
         }
         socket.broadcast.emit('disconnected', {id: thisMemberId});
-        console.log("Updated member list: " + members);
-        console.log("Updated admin list: " + admins);
+        console.log("Updated Member List: ", members);
+        console.log("Updated Admin List: ", admins);
     });
 });

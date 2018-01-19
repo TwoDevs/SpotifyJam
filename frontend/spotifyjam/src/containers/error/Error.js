@@ -4,7 +4,9 @@ import React from 'react';
 const Error = (props) => {
     return(
         <div>
-            Error Page
+            <h1>Error Page</h1>
+            <hr/>
+            <p>Example Error Page</p>
         </div>
     );
 };

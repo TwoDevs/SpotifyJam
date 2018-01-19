@@ -1,9 +1,14 @@
+//React | Redux | Router
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { ConnectedRouter } from 'react-router-redux';
 import store, { history } from './store';
 
+//Styling
+import './index.css';
+
+//Components
 import App from './containers/app/App';
 import registerServiceWorker from './registerServiceWorker';
 
@@ -17,6 +22,4 @@ ReactDOM.render(
     </Provider>, 
 
 document.getElementById('root'));
-
-
 registerServiceWorker();

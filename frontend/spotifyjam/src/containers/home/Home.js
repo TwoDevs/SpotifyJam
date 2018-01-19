@@ -1,15 +1,21 @@
-import React, { Component } from 'react';
-import { push } from 'react-router-redux';
-import { bindActionCreator } from 'redux';
-import { Link } from 'react-router-dom';
+//React | Redux | Router
+import React, {Component} from 'react';
+import {push} from 'react-router-redux';
+import {Link} from 'react-router-dom';
+import {bindActionCreator} from 'redux';
+import {connect} from 'react-redux';
 
+//Socket Libraries
 import socketIOClient from "socket.io-client";
-
 import {get_sync_dict_from_json} from '../../playerUtil';
-//var devKeys = require('../../../../../server/devKeys');
 
+//Keys & Mode
+import {devURLs, productionURLs} from '../../devKeys';
+const devMode = true;
+const {server_url} = devMode ? devURLs : productionURLs;
+
+//Spotify Libraries
 const queryString = require('query-string');
-
 var SpotifyWebAPI = require("spotify-web-api-js");
 var spotifyAPI = new SpotifyWebAPI();
 
@@ -20,11 +26,12 @@ class Home extends Component {
         super(props);
         this.state = {
           connected: false,
-          endpoint: 'http://35.226.86.75:8000',
+          endpoint: server_url,
           isAdmin: false,
           accessToken: null
         };
       } 
+
       sync_local_player = (sync_data) => {
         spotifyAPI.getMyCurrentPlayingTrack( function(err, my_data) {
           if (err) {
@@ -59,7 +66,7 @@ class Home extends Component {
             }, this.register);
         }
 
-        const {endpoint} = this.state;
+        const {endpoint, isAdmin} = this.state;
         const socket = socketIOClient(endpoint);
         const timeInterval = 5000;
 
@@ -82,61 +89,64 @@ class Home extends Component {
           this.sync_local_player(sync_data);
         });
         
-        setInterval(() => {
-          if(this.state.isAdmin){
+        const pollingInterval = setInterval(() => {
+          if(isAdmin){
               this.sendSync(socket);
           }
         },timeInterval);
+        this.setState({
+          pollingInterval
+        });
     
       }
     
       componentWillUnmount(){
-        // console.log(this.socket);
-        // socket.off("connect");
-        // socket.off("config");
+        const {pollingInterval} = this.state;
+        clearInterval(pollingInterval);
       }
     
     
       //Modularized Methods
-    
       register = () => {
-        console.log("HEY IM HERE", this.state.accessToken);
-        if (this.state.accessToken){
-            spotifyAPI.setAccessToken(this.state.accessToken);
-            console.log("Set token successful!");
+        const {accessToken} = this.state;
+        if (accessToken){
+            spotifyAPI.setAccessToken(accessToken);
         }
       }
 
       sendSync = (socket) => {
-        // get Elvis' albums, passing a callback. When a callback is passed, no Promise is returned
         spotifyAPI.getMyCurrentPlayingTrack( function(err, data) {
           if (err) console.error(err);
-          else socket.emit('sync',data);
+          else {
+              data.timestamp = Date.now();
+              socket.emit('sync',data);
+          }
         });
       }
     
-      gatherPlayerData = () => {
-    
-      }
     render() {
         const {connected, endpoint, isAdmin, accessToken} = this.state;
+        const {store} = this.props;
+        console.log(store);
 
         return(
             <div>
                 <h1> Home Page</h1>
                 <hr/>
-                <p>Access Token is: {accessToken}</p>
-                <p>Connected: {connected.toString()}</p>
-                <p>Endpoint URL: {endpoint}</p>
-                
+                <p>Admin: {isAdmin.toString()}</p>
+                <p>Connection Status: {connected.toString()}</p>
+                <p>Server URL: {endpoint}</p>
+                <p>Access Token: {accessToken}</p>
             </div>
         );
     }
 }
 
-export default Home;
 
+//Redux Connection Functions
 
-// <p> Endpoint IP: {endpoint}</p>
-// <p> Connected: {connected}</p>
-// <p> isAdmin: {isAdmin.toString()}</p>
+const mapStateToProps = (state) => ({
+  store:state
+});
+
+export default connect(mapStateToProps, null)(Home);
