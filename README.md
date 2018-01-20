@@ -2,6 +2,9 @@ SpotifyJam
 ---
 
 Come jam with your friends with synchonized Spotify applications!
+Prototype Socket and Spotify Build:
+https://spotifyjam-299d8.firebaseapp.com/
+
 
 Frontend Development
 ---
