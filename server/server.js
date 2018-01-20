@@ -1,12 +1,11 @@
-//Express App Set Up
+//Packages and Setup
+var defaultPort = 8000;
 var express = require('express'); // Express web server framework
 var request = require('request'); // "Request" library
 var app = require('express')();
-
-//Socket.IO Set Up
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
-var defaultPort = 8000;
+//var io = require('socket.io')(process.env.PORT || defaultPort);
 server.listen(defaultPort);
 
 //Third Party Packages
@@ -14,18 +13,30 @@ var shortid = require('shortid');
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
 
-//Server Mode 
+//Key Setup
+
+//Server Mode  
 var devMode = true;
-var {devURLs, productionURLs, client_id, client_secret} = require('./devKeys');
-var {redirect_uri, frontend_url, server_url} = devMode ? devURLs : productionURLs;
+
+for (let j = 2; j < process.argv.length; j++) {  
+    console.log(j + ' -> ' + (process.argv[j]));
+    if (process.argv[j] === "--prod") {
+        devMode = false;
+    }
+}
+
+var {devURLs, productionURLs, client_id, client_secret} = require('./devKeys'); 
+var {redirect_uri, frontend_url, server_url} = devMode ? devURLs : productionURLs; 
+
 
 //Player Management
-var members = [];
-var admins = [];
+var default_room = "Lobby";
+var rooms = { [default_room] : {admins: [], members: []}};
 
 //---Server Start---
 console.log("\n---------------------------")
 console.log("Server Started - Port: " + defaultPort);
+console.log("redirect_uri: " + redirect_uri);
 var mode = devMode ? "Development Mode" : "Production Mode";
 console.log("\nRunning in", mode);
 console.log(  "---------------------------\n")
@@ -44,12 +55,106 @@ var generateRandomString = function(length) {
   
 var stateKey = 'spotify_auth_state';
 
+var existsRoom = function(room_name) {
+    return (room_name in rooms);
+}
+
+var isDefaultRoom = function(room_name) {
+    return (room_name === default_room);
+}
+
+var sendAvailableRooms = function(socket) {
+    socket.emit('availableRooms', {rooms: Object.keys(rooms), currentRoom: currentRoom(socket)});
+}
+
+var currentRoom = function(socket) {
+    var joinedRooms = socket.rooms;
+    for (var room_name in joinedRooms) {
+        if (existsRoom(room_name)) {
+            //ignore unary socket.id room
+            //leave all other rooms.
+            return room_name;
+        }
+    }
+}
+
+//TODO client side room create
+var createRoom = function(room_name) {
+    if (isDefaultRoom(room_name)) {
+        return;
+    } else if (existsRoom(room_name)) {
+        return;
+    } else {
+        rooms[room_name] = {admins:[],members:[]}
+    }
+}
+
+//TODO client get room name
+var inRoom = function(socket, room_name) {
+    return ((room_name in rooms) && (rooms[room_name].members.indexOf(socket.id) >= 0));
+}
+
+var leaveRooms = function(socket) {
+    var joinedRooms = socket.rooms;
+    for (var room_name in joinedRooms) {
+        if (existsRoom(room_name)) {
+            //ignore unary socket.id room
+            //leave all other rooms.
+            var mIndex = rooms[room_name].members.indexOf(socket.id);
+            rooms[room_name].members.splice(mIndex, 1);
+            var aIndex = rooms[room_name].admins.indexOf(socket.id);
+            if (aIndex >= 0) {
+                rooms[room_name].admins.splice(aIndex, 1);
+            }
+            socket.leave(room_name);
+        }
+    }
+}
+
+//TODO client join room
+var joinRoom = function(socket, room_name, callback) {
+    if (!existsRoom(room_name)) {
+        return;
+    } else if (inRoom(socket, room_name)) {
+        return;
+    } else {
+        var joinRoom = rooms[room_name];
+        leaveRooms(socket);
+        joinRoom.members.push(socket.id);
+        
+        socket.join(room_name, () => {
+            if (joinRoom.admins.length == 0) {
+                // Add admin
+                joinRoom.admins.push(socket.id);
+                socket.emit('config', {isAdmin: true });
+            } else {
+                socket.emit('config', {isAdmin: false });
+            }
+            callback();
+        });
+    }
+}
+
+//TODO client side room join
+var deleteRoom = function(room_name) {
+    if (isDefaultRoom(room_name)) {
+        return;
+    } else if (existsRoom(room_name)) {
+        io.to(room_name).emit('joinRoom', default_room);
+        delete rooms[room_name];
+    }
+}
+
+
 app.use(express.static(__dirname + '/public'))
    .use(cookieParser());
 
 app.get('/login', function(req, res) {
+
     var state = generateRandomString(16);
     res.cookie(stateKey, state);
+
+    // your application requests authorization
     var scope = 'user-read-currently-playing user-modify-playback-state';
     res.redirect('https://accounts.spotify.com/authorize?' +
         querystring.stringify({
@@ -95,18 +200,16 @@ app.get('/callback', function(req, res) {
             var access_token = body.access_token,
                 refresh_token = body.refresh_token;
             var options = {
-            url: 'https://api.spotify.com/v1/me',
-            headers: { 'Authorization': 'Bearer ' + access_token },
-            json: true
+                url: 'https://api.spotify.com/v1/me',
+                headers: { 'Authorization': 'Bearer ' + access_token },
+                json: true
             };
 
             // use the access token to access the Spotify Web API
-            // request.get(options, function(error, response, body) {
-            // console.log(body);
-            // });
+            request.get(options, function(error, response, body) {});
 
             // we can also pass the token to the browser to make requests from there
-            res.redirect(frontend_url + '/#' +
+            res.redirect('/#' +
             querystring.stringify({
                 access_token: access_token,
                 refresh_token: refresh_token
@@ -122,7 +225,6 @@ app.get('/callback', function(req, res) {
 });
 
 app.get('/refresh_token', function(req, res) {
-
   // requesting access token from refresh token
   var refresh_token = req.query.refresh_token;
   var authOptions = {
@@ -145,42 +247,40 @@ app.get('/refresh_token', function(req, res) {
   });
 });
 
-
-
-
 //Websocket Functions
 io.on('connection', function(socket){
     //instantiate member
-    var thisMemberId = shortid.generate();
-    console.log("\n~ Connection Created - Member " +  thisMemberId + " | Connected to socket: " + socket.id + " ~");
-    members.push(thisMemberId);
+    //var thisMemberId = shortid.generate();
+    var thisMemberId = socket.id;
+    console.log("\n\n~ Connection Created - Member " +  thisMemberId + " | Connected to socket: " + socket.id + " ~");
 
-    // No admins yet, add admin
-    console.log("Number of Admins: ");
-    console.log(admins.length);
-    if (admins.length == 0) {
-        admins.push(thisMemberId);
-        socket.emit('config', { isAdmin: true });
-    } else {
-        socket.emit('config', { isAdmin: false });
-    }
+    joinRoom(socket, default_room, function(){});
     
-
     //broadcast track info to room
     socket.on('sync', function(data){
         socket.broadcast.emit('sync', data);
     });
 
+    socket.on('availableRooms', function() {
+        sendAvailableRooms(socket);
+    });
+
+    socket.on('createRoom', function(data) {
+        console.log("Creating room " + data.room_name);
+        createRoom(data.room_name);
+        sendAvailableRooms(socket);
+    });
+
+    socket.on('joinRoom', function(data) {
+        joinRoom(socket, data.room_name, function() {
+            console.log(thisMemberId + " moved to " + currentRoom(socket));
+            sendAvailableRooms(socket);
+        });
+    });
+
     socket.on('disconnect', function(){
-        console.log("\n~ Player " + thisMemberId + " is Disconnecting. ~");
-        var memberIndex = members.indexOf(thisMemberId);
-        members.splice(memberIndex, 1);
-        var adminIndex = admins.indexOf(thisMemberId);
-        if (adminIndex >= 0) {
-            admins.splice(adminIndex, 1);
-        }
+        console.log("\n\n~ Player " + thisMemberId + " is Disconnecting. ~");
+        leaveRooms(socket);
         socket.broadcast.emit('disconnected', {id: thisMemberId});
-        console.log("Updated Member List: ", members);
-        console.log("Updated Admin List: ", admins);
     });
 });
