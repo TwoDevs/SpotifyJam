@@ -6,13 +6,19 @@ var app = require('express')();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 
-
+const readline = require('readline');
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
 
 var state = {
     connected: false,
     endpoint: 'http://localhost:8000',
     isAdmin: false,
-    accessToken: null
+    accessToken: null,
+    rooms: null,
+    currentRoom: null
 };
 
 const {endpoint} = state;
@@ -21,13 +27,42 @@ const timeInterval = 5000;
 
 socket.on("connect", () => {
     console.log("Connected");
-    socket.emit("availableRooms");
-    console.log("Creating a room ");
-    socket.emit("createRoom", {room_name: "Test"});
-    console.log("Joining a room");
-    socket.emit("joinRoom", {room_name: "Test"});
 });
 
 socket.on("availableRooms", (data) => {
-    console.log("Current Room: " + data.currentRoom)
+    state.rooms = data.rooms;
+    state.currentRoom = data.currentRoom;
+    console.log("Updated rooms");
 });
+
+var dispRooms = function(){
+    console.log("Current Room: " + state.currentRoom);
+    console.log("Available Rooms: " + state.rooms);
+}
+
+rl.on('line', (line) => {
+    if (line == "help") {
+        console.log("Available commands are:");
+        console.log("available : display available rooms");
+        console.log("create <room-name> : Create a room with the given name");
+        console.log("join <room-name> : Join a room with the given name");
+    } else if (line == "available") {
+        dispRooms();
+    } else {
+        var index = line.indexOf(" ");  // Gets the first index where a space occours
+        if (index < 1) {
+            console.log("Command '" + line + "' not recognized, use help for the command list.");
+        } else {
+            var command = line.substr(0, index); // Gets the first part
+            var text = line.substr(index + 1);  // Gets the second part
+            if (command == "create") {
+                socket.emit("createRoom", {room_name: text});
+            } else if (command == "join") {
+                socket.emit("joinRoom", {room_name: text});
+            } else {
+                console.log("Command '" + line + "' not recognized, use help for the command list.");
+            }
+        }
+    }
+
+  });

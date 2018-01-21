@@ -13,8 +13,9 @@ var shortid = require('shortid');
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
 
+var RoomManager =  require('./room-manager.js');
+var rm = new RoomManager("Lobby");
 //Key Setup
-
 //Server Mode  
 var devMode = true;
 
@@ -28,10 +29,9 @@ for (let j = 2; j < process.argv.length; j++) {
 var {devURLs, productionURLs, client_id, client_secret} = require('./devKeys'); 
 var {redirect_uri, frontend_url, server_url} = devMode ? devURLs : productionURLs; 
 
-
 //Player Management
 var default_room = "Lobby";
-var rooms = { [default_room] : {admins: [], members: []}};
+
 
 //---Server Start---
 console.log("\n---------------------------")
@@ -54,97 +54,6 @@ var generateRandomString = function(length) {
   };
   
 var stateKey = 'spotify_auth_state';
-
-var existsRoom = function(room_name) {
-    return (room_name in rooms);
-}
-
-var isDefaultRoom = function(room_name) {
-    return (room_name === default_room);
-}
-
-var sendAvailableRooms = function(socket) {
-    socket.emit('availableRooms', {rooms: Object.keys(rooms), currentRoom: currentRoom(socket)});
-}
-
-var currentRoom = function(socket) {
-    var joinedRooms = socket.rooms;
-    for (var room_name in joinedRooms) {
-        if (existsRoom(room_name)) {
-            //ignore unary socket.id room
-            //leave all other rooms.
-            return room_name;
-        }
-    }
-}
-
-//TODO client side room create
-var createRoom = function(room_name) {
-    if (isDefaultRoom(room_name)) {
-        return;
-    } else if (existsRoom(room_name)) {
-        return;
-    } else {
-        rooms[room_name] = {admins:[],members:[]}
-    }
-}
-
-//TODO client get room name
-var inRoom = function(socket, room_name) {
-    return ((room_name in rooms) && (rooms[room_name].members.indexOf(socket.id) >= 0));
-}
-
-var leaveRooms = function(socket) {
-    var joinedRooms = socket.rooms;
-    for (var room_name in joinedRooms) {
-        if (existsRoom(room_name)) {
-            //ignore unary socket.id room
-            //leave all other rooms.
-            var mIndex = rooms[room_name].members.indexOf(socket.id);
-            rooms[room_name].members.splice(mIndex, 1);
-            var aIndex = rooms[room_name].admins.indexOf(socket.id);
-            if (aIndex >= 0) {
-                rooms[room_name].admins.splice(aIndex, 1);
-            }
-            socket.leave(room_name);
-        }
-    }
-}
-
-//TODO client join room
-var joinRoom = function(socket, room_name, callback) {
-    if (!existsRoom(room_name)) {
-        return;
-    } else if (inRoom(socket, room_name)) {
-        return;
-    } else {
-        var joinRoom = rooms[room_name];
-        leaveRooms(socket);
-        joinRoom.members.push(socket.id);
-        
-        socket.join(room_name, () => {
-            if (joinRoom.admins.length == 0) {
-                // Add admin
-                joinRoom.admins.push(socket.id);
-                socket.emit('config', {isAdmin: true });
-            } else {
-                socket.emit('config', {isAdmin: false });
-            }
-            callback();
-        });
-    }
-}
-
-//TODO client side room join
-var deleteRoom = function(room_name) {
-    if (isDefaultRoom(room_name)) {
-        return;
-    } else if (existsRoom(room_name)) {
-        io.to(room_name).emit('joinRoom', default_room);
-        delete rooms[room_name];
-    }
-}
-
 
 app.use(express.static(__dirname + '/public'))
    .use(cookieParser());
@@ -254,7 +163,7 @@ io.on('connection', function(socket){
     var thisMemberId = socket.id;
     console.log("\n\n~ Connection Created - Member " +  thisMemberId + " | Connected to socket: " + socket.id + " ~");
 
-    joinRoom(socket, default_room, function(){});
+    rm.joinRoom(socket, default_room, function(){});
     
     //broadcast track info to room
     socket.on('sync', function(data){
@@ -262,25 +171,25 @@ io.on('connection', function(socket){
     });
 
     socket.on('availableRooms', function() {
-        sendAvailableRooms(socket);
+        rm.sendAvailableRooms(socket);
     });
 
     socket.on('createRoom', function(data) {
         console.log("Creating room " + data.room_name);
-        createRoom(data.room_name);
-        sendAvailableRooms(socket);
+        rm.createRoom(data.room_name);
+        rm.sendAvailableRooms(socket);
     });
 
     socket.on('joinRoom', function(data) {
-        joinRoom(socket, data.room_name, function() {
-            console.log(thisMemberId + " moved to " + currentRoom(socket));
-            sendAvailableRooms(socket);
+        rm.joinRoom(socket, data.room_name, function() {
+            console.log(thisMemberId + " moved to " + rm.currentRoom(socket));
+            rm.sendAvailableRooms(socket);
         });
     });
 
     socket.on('disconnect', function(){
         console.log("\n\n~ Player " + thisMemberId + " is Disconnecting. ~");
-        leaveRooms(socket);
+        rm.leaveRooms(socket);
         socket.broadcast.emit('disconnected', {id: thisMemberId});
     });
 });
