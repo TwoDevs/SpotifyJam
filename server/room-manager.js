@@ -17,6 +17,10 @@ method.sendAvailableRooms = function(socket) {
     socket.emit('availableRooms', {rooms: Object.keys(this.rooms), currentRoom: this.currentRoom(socket)});
 }
 
+method.broadcastAvailableRooms = function(io) {
+    io.emit('availableRooms', {rooms: Object.keys(this.rooms)});
+}
+
 method.currentRoom = function(socket) {
     var joinedRooms = socket.rooms;
     for (var room_name in joinedRooms) {

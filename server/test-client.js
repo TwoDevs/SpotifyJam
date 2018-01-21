@@ -31,8 +31,14 @@ socket.on("connect", () => {
 
 socket.on("availableRooms", (data) => {
     state.rooms = data.rooms;
-    state.currentRoom = data.currentRoom;
+    if ("currentRoom" in data) {
+        state.currentRoom = data.currentRoom;
+    }
     console.log("Updated rooms");
+});
+
+socket.on("msg", (message) => {
+    console.log(message.username+": " + message.message_text);
 });
 
 var dispRooms = function(){
@@ -46,6 +52,7 @@ rl.on('line', (line) => {
         console.log("available : display available rooms");
         console.log("create <room-name> : Create a room with the given name");
         console.log("join <room-name> : Join a room with the given name");
+        console.log("send <message text> : send a message to the current room");
     } else if (line == "available") {
         dispRooms();
     } else {
@@ -59,10 +66,12 @@ rl.on('line', (line) => {
                 socket.emit("createRoom", {room_name: text});
             } else if (command == "join") {
                 socket.emit("joinRoom", {room_name: text});
+            } else if (command == "send") {
+                socket.emit("msg", {message_text: text});
             } else {
                 console.log("Command '" + line + "' not recognized, use help for the command list.");
             }
         }
     }
 
-  });
+});

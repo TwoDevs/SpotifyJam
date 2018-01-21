@@ -159,6 +159,7 @@ app.get('/refresh_token', function(req, res) {
 //Websocket Functions
 io.on('connection', function(socket){
     //instantiate member
+
     //var thisMemberId = shortid.generate();
     var thisMemberId = socket.id;
     console.log("\n\n~ Connection Created - Member " +  thisMemberId + " | Connected to socket: " + socket.id + " ~");
@@ -167,7 +168,11 @@ io.on('connection', function(socket){
     
     //broadcast track info to room
     socket.on('sync', function(data){
-        socket.broadcast.emit('sync', data);
+        socket.broadcast.to(rm.currentRoom(socket)).emit('sync', data);
+    });
+
+    socket.on('msg', function(message){
+        socket.broadcast.to(rm.currentRoom(socket)).emit('msg', {username: thisMemberId, message_text: message.message_text});
     });
 
     socket.on('availableRooms', function() {
@@ -177,7 +182,7 @@ io.on('connection', function(socket){
     socket.on('createRoom', function(data) {
         console.log("Creating room " + data.room_name);
         rm.createRoom(data.room_name);
-        rm.sendAvailableRooms(socket);
+        rm.broadcastAvailableRooms(io);
     });
 
     socket.on('joinRoom', function(data) {
