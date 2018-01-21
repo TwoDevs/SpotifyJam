@@ -25,16 +25,31 @@ Deploy Build
 4. firebase deploy
 
 
-Server Development
+Deploy Server
 ---
-```
-cd server/
-```
+1. git pull origin master
+2. export PROJECT_ID="$(gcloud config get-value project -q)"
+3. vi Dockerfile //Edit any build directives
+4. docker build -t gcr.io/${PROJECT_ID}/(docker-proj-name):(docker-tag) .  _//(docker-proj-name) = spotifyjam_
+5. gcloud docker -- push gcr.io/${PROJECT_ID}/(docker-proj-name):(docker-tag) _// push docker build to gcloud_
+6. _//(port-no) should match the port the server uses, (service-name) = spotifyjam-backend_
+    * kubectl run <service-name> --image=gcr.io/${PROJECT_ID}/(docker-proj-name):(docker-tag) --port (port-no) 
+    * kubectl set image deployment/(service-name) (service-name)=gcr.io/${PROJECT_ID}/(docker-proj-name):(docker-tag)
+7. kubectl expose deployment (service-name) --type=LoadBalancer --port (port-no) --target-port (user-port) _//(user-port) should match the port the client uses_
 
-Run
+
+Run Local Server
 ---
+_server_
 1. npm install
 2. node server.js
+
+_client_
+1. node test-client.js
+  * available
+  * create test-room
+  * join test-room
+  * send hello!
 
 Managing Packages 
 ---
