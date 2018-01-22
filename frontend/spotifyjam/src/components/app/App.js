@@ -1,6 +1,7 @@
-//React
+//React | Router | Redux
 import React, {Component} from 'react';
 import {Route, Link} from 'react-router-dom';
+import {connect} from 'react-redux';
 
 //Components
 import {Menu, Icon} from 'antd';
@@ -8,6 +9,9 @@ import Home from '../home/Home';
 import Error from '../error/Error';
 import Todo from '../todo/Todo';
 import ReduxView from '../storeview/ReduxView';
+
+//Selectors
+import {selectCurrentPage} from '../../selectors/routerSelectors';
 
 //Styling
 import "./App.css";
@@ -19,47 +23,35 @@ const {server_url} = devMode ? devURLs : productionURLs;
 
 
 class App extends Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      currentTab: 'home'
-    };
-  }
-
-  handleMenuTabClick = (e) => {
-    this.setState({
-      currentTab: e.key
-    });
-  }
 
   render () {
-    const {currentTab} = this.state;
+    const {currentTab} = this.props;
     return (
       <div>
       
         <header>
-          <Menu onClick={this.handleMenuTabClick} selectedKeys={[currentTab]} mode="horizontal" theme = "dark">
-            <Menu.Item key="home">
+          <Menu selectedKeys={[currentTab]} mode="horizontal" theme = "dark">
+            <Menu.Item key="/">
               <Link to="/">
                 <Icon type="home"/>Home
               </Link>
             </Menu.Item>
-            <Menu.Item key="alipay">             
+            <Menu.Item key="/login">             
               <a href = {server_url + "/login"}>
                 <Icon type="unlock" /> Authorize Spotify
               </a>
             </Menu.Item>
-            <Menu.Item key="todo">
+            <Menu.Item key="/todo">
               <Link to="/todo">
                 <Icon type="line-chart" /> Todo List
               </Link>
             </Menu.Item>
-            <Menu.Item key="store">
+            <Menu.Item key="/store">
               <Link to="/store">
                 <Icon type="database" /> Redux Store
               </Link>
             </Menu.Item>
-            <Menu.Item key="error">
+            <Menu.Item key="/error">
               <Link to="/error">
                 <Icon type="warning" /> Error
               </Link>
@@ -81,4 +73,11 @@ class App extends Component {
 }
 
 
-export default App;
+const mapStateToProps = (state) => {
+  return {
+    currentTab: selectCurrentPage(state)
+  };
+}
+
+
+export default connect(mapStateToProps, null)(App);

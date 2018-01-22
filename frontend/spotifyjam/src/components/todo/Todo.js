@@ -1,5 +1,5 @@
 import React from 'react';
-import {Steps, Icon, List} from 'antd';
+import {List} from 'antd';
 
 const Todo = (props) => {
     const data = [
