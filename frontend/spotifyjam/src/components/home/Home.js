@@ -1,9 +1,8 @@
 //React | Redux | Router
 import React, {Component} from 'react';
-import {Link} from 'react-router-dom';
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
-import {setUsername, setAccessToken} from '../../session/session';
+import {setUsername, setAccessToken} from '../../redux/features/session';
 
 //Socket Libraries
 import socketIOClient from "socket.io-client";

@@ -11,7 +11,7 @@ import Todo from '../todo/Todo';
 import ReduxView from '../storeview/ReduxView';
 
 //Selectors
-import {selectCurrentPage} from '../../selectors/routerSelectors';
+import {selectCurrentPage} from '../../redux/selectors';
 
 //Styling
 import "./App.css";
