@@ -1,13 +1,16 @@
 //React | Redux | Router
 import React, {Component} from 'react';
-import {push} from 'react-router-redux';
 import {Link} from 'react-router-dom';
-import {bindActionCreator} from 'redux';
+import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
+import {setUsername, setAccessToken} from '../../session/session';
 
 //Socket Libraries
 import socketIOClient from "socket.io-client";
-import {get_sync_dict_from_json} from '../../playerUtil';
+import {get_sync_dict_from_json} from '../../spotify/playerUtil';
+
+//Components
+import {Input, Icon, Button} from 'antd';
 
 //Keys & Mode
 import {devURLs, productionURLs} from '../../devKeys';
@@ -28,7 +31,8 @@ class Home extends Component {
           connected: false,
           endpoint: server_url,
           isAdmin: false,
-          accessToken: null
+          accessToken: null,
+          username: "",
         };
       } 
 
@@ -85,7 +89,6 @@ class Home extends Component {
 
         socket.on("sync", (sync_data) =>{
           console.log("Received Sync!");
-          console.log(sync_data);
           this.sync_local_player(sync_data);
         });
         
@@ -123,12 +126,22 @@ class Home extends Component {
           }
         });
       }
-    
-    render() {
-        const {connected, endpoint, isAdmin, accessToken} = this.state;
-        const {store} = this.props;
-        console.log(store);
+      
+      handleUsername = (e) => {
+        this.setState({
+          username: e.target.value
+        });
+      }
 
+      handleAccessToken = (e) => {
+        this.setState({
+          accessToken: e.target.value
+        });
+      }
+
+    render() {
+        const {connected, endpoint, isAdmin, accessToken, username} = this.state;
+        const {setUsername, setAccessToken} = this.props;
         return(
             <div>
                 <h1> Home Page</h1>
@@ -137,6 +150,16 @@ class Home extends Component {
                 <p>Connection Status: {connected.toString()}</p>
                 <p>Server URL: {endpoint}</p>
                 <p>Access Token: {accessToken}</p>
+                <Input
+                  placeholder="Enter your usename"
+                  prefix={<Icon type="key" style={{ color: 'rgba(0,0,0,.25)' }} />}
+                  onChange = {this.handleUsername}/>
+                <Button type="dashed" onClick = {() => setUsername(username)}>Submit Username</Button>
+                <Input
+                  placeholder="Enter your token"
+                  prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
+                  onChange = {this.handleAccessToken}/>
+                <Button type="dashed" onClick = {() => setAccessToken(accessToken)}>Submit Access Token</Button>
             </div>
         );
     }
@@ -145,8 +168,9 @@ class Home extends Component {
 
 //Redux Connection Functions
 
-const mapStateToProps = (state) => ({
-  store:state
-});
+const mapDispatchToProps = dispatch => bindActionCreators({
+  setUsername,
+  setAccessToken
+}, dispatch);
 
-export default connect(mapStateToProps, null)(Home);
+export default connect(null, mapDispatchToProps)(Home);
