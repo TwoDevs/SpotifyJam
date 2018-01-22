@@ -12,7 +12,7 @@ Frontend Development
 cd frontend/spotifyjam/
 ```
 
-Run
+Run Local Site
 ---
 1. yarn (install)
 3. yarn start (run)
@@ -26,6 +26,12 @@ Deploy Build
     a. delete the .map
     b. export GENERATE_SOURCEMAP=false
 5. firebase deploy
+
+Backend Development
+---
+```
+cd server/
+```
 
 
 Deploy Server
