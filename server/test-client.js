@@ -41,6 +41,22 @@ socket.on("msg", (message) => {
     console.log(message.username+": " + message.message_text);
 });
 
+socket.on("authenticate", (auth_status) => {
+    var {status, req} = auth_status;
+    if (status == "failed") {
+        console.log("authentication failed for: ");
+        console.log("username: " + req.username);
+        console.log("spotify-id: " + req.spotify_id);
+        console.log("is_guest: " + req.is_guest);
+    } else if (status == "succeeded") {
+        console.log("authentication succeeded for: ");
+        console.log("username: " + req.username);
+        console.log("spotify-id: " + req.spotify_id);
+        console.log("is_guest: " + req.is_guest);
+        console.log("Your user_id is " + auth_status.user.user_id);
+    }
+});
+
 var dispRooms = function(){
     console.log("Current Room: " + state.currentRoom);
     console.log("Available Rooms: " + state.rooms);
@@ -48,7 +64,8 @@ var dispRooms = function(){
 
 rl.on('line', (line) => {
     if (line == "help") {
-        console.log("Available commands are:");
+        console.log("The valid commands are:");
+        console.log("authenticate <is_guest> <spotify-id> <username> : submit session info to enter the app");
         console.log("available : display available rooms");
         console.log("create <room-name> : Create a room with the given name");
         console.log("join <room-name> : Join a room with the given name");
@@ -62,7 +79,29 @@ rl.on('line', (line) => {
         } else {
             var command = line.substr(0, index); // Gets the first part
             var text = line.substr(index + 1);  // Gets the second part
-            if (command == "create") {
+
+            if (command == "authenticate") {
+                var isGuestIndex = text.indexOf(" ");
+                if (isGuestIndex < 0) {
+                    console.log("authenticate malformed: <is_guest> is missing");
+                } else {
+                    var is_guest = text.substr(0, isGuestIndex); // Gets the first part
+                    var text = text.substr(isGuestIndex + 1);  // Gets the second part
+                    var spotifyIDIndex = text.indexOf(" ");
+                    if (spotifyIDIndex < 0) {
+                        console.log("authenticate malformed: <spotify_id> is missing");
+                    } else {
+                        var spotify_id = text.substr(0, spotifyIDIndex); // Gets the first part
+                        var username = text.substr(spotifyIDIndex + 1);  // Gets the second part
+                        var user_req = {
+                            spotify_id : spotify_id,
+                            username : username,
+                            is_guest : is_guest
+                        }
+                        socket.emit("authenticate", user_req);
+                    }
+                }
+            } else if (command == "create") {
                 socket.emit("createRoom", {room_name: text});
             } else if (command == "join") {
                 socket.emit("joinRoom", {room_name: text});

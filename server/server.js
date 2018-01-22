@@ -15,17 +15,19 @@ var cookieParser = require('cookie-parser');
 
 var RoomManager =  require('./room-manager.js');
 var rm = new RoomManager("Lobby");
-//Key Setup
-//Server Mode  
-var devMode = true;
 
-for (let j = 2; j < process.argv.length; j++) {  
+var UserManager =  require('./user-manager.js');
+var um = new UserManager();
+
+var devMode = true;
+for (let j = 2; j < process.argv.length; j++) { 
     console.log(j + ' -> ' + (process.argv[j]));
     if (process.argv[j] === "--prod") {
         devMode = false;
     }
 }
 
+//Key Setup
 var {devURLs, productionURLs, client_id, client_secret} = require('./devKeys'); 
 var {redirect_uri, frontend_url, server_url} = devMode ? devURLs : productionURLs; 
 
@@ -77,7 +79,7 @@ app.get('/login', function(req, res) {
 
 app.get('/callback', function(req, res) {
 
-    // your application requests refresh and access tokens
+    // Application requests refresh and access tokens
     // after checking the state parameter
     var code = req.query.code || null;
     var state = req.query.state || null;
@@ -156,45 +158,59 @@ app.get('/refresh_token', function(req, res) {
   });
 });
 
-//Websocket Functions
-io.on('connection', function(socket){
-    //instantiate member
+var createSocketSession = function(socket, user_req) {
 
-    //var thisMemberId = shortid.generate();
-    var thisMemberId = socket.id;
-    console.log("\n\n~ Connection Created - Member " +  thisMemberId + " | Connected to socket: " + socket.id + " ~");
+    var {spotify_id, username, is_guest} = user_req;
+    var user = um.addUser(socket, username, is_guest, spotify_id);
+    if (user == null) {
+        socket.emit("authenticate", {status: "failed", req: user_req});
+    } else {
+        console.log("\n\n~ Session Created - Member " +  user.username + " | Connected to socket: " + socket.id + " ~");
+        rm.joinRoom(socket, default_room, function(){});
+        
+        socket.on('disconnect', function(){
+            console.log("\n\n~ Member " + user.username + " is Disconnecting. ~");
+            rm.leaveRooms(socket);
+            um.deleteUser(user);
+            socket.broadcast.emit('disconnected', {username: user.username});
+        });
 
-    rm.joinRoom(socket, default_room, function(){});
-    
-    //broadcast track info to room
-    socket.on('sync', function(data){
-        socket.broadcast.to(rm.currentRoom(socket)).emit('sync', data);
-    });
+        socket.on('sync', function(data){
+            socket.broadcast.to(rm.currentRoom(socket)).emit('sync', data);
+        });
 
-    socket.on('msg', function(message){
-        socket.broadcast.to(rm.currentRoom(socket)).emit('msg', {username: thisMemberId, message_text: message.message_text});
-    });
+        socket.on('msg', function(message){
+            socket.broadcast.to(rm.currentRoom(socket)).emit('msg', {username: user.username, message_text: message.message_text});
+        });
 
-    socket.on('availableRooms', function() {
-        rm.sendAvailableRooms(socket);
-    });
-
-    socket.on('createRoom', function(data) {
-        console.log("Creating room " + data.room_name);
-        rm.createRoom(data.room_name);
-        rm.broadcastAvailableRooms(io);
-    });
-
-    socket.on('joinRoom', function(data) {
-        rm.joinRoom(socket, data.room_name, function() {
-            console.log(thisMemberId + " moved to " + rm.currentRoom(socket));
+        socket.on('availableRooms', function() {
             rm.sendAvailableRooms(socket);
         });
-    });
+
+        socket.on('createRoom', function(data) {
+            console.log("Creating room " + data.room_name);
+            rm.createRoom(data.room_name);
+            rm.broadcastAvailableRooms(io);
+        });
+
+        socket.on('joinRoom', function(data) {
+            rm.joinRoom(socket, data.room_name, function() {
+                console.log(user.username + " joined room " + rm.currentRoom(socket));
+                rm.sendAvailableRooms(socket);
+            });
+        });
+
+        socket.emit("authenticate", {status: "succeeded", req: user_req, user: user});
+    }
+}
+
+io.on('connection', function(socket){
 
     socket.on('disconnect', function(){
-        console.log("\n\n~ Player " + thisMemberId + " is Disconnecting. ~");
-        rm.leaveRooms(socket);
-        socket.broadcast.emit('disconnected', {id: thisMemberId});
+        console.log("\n\n~ Unauthed socket " + socket.id + " is Disconnecting. ~");
+    });
+
+    socket.on('authenticate', function(user_req){
+        createSocketSession(socket, user_req);
     });
 });
