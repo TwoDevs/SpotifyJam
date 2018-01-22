@@ -1,13 +1,9 @@
 //React | Redux | Router
 import React, {Component} from 'react';
-import {push} from 'react-router-redux';
-import {Link} from 'react-router-dom';
-import {bindActionCreator} from 'redux';
-import {connect} from 'react-redux';
 
 //Socket Libraries
 import socketIOClient from "socket.io-client";
-import {get_sync_dict_from_json} from '../../playerUtil';
+import {get_sync_dict_from_json} from '../../spotify/playerUtil';
 
 //Keys & Mode
 import {devURLs, productionURLs} from '../../devKeys';
@@ -21,14 +17,13 @@ var spotifyAPI = new SpotifyWebAPI();
 
 
 
-class Home extends Component {
+class Lobby extends Component {
     constructor(props){
         super(props);
         this.state = {
           connected: false,
           endpoint: server_url,
           isAdmin: false,
-          accessToken: null
         };
       } 
 
@@ -85,7 +80,6 @@ class Home extends Component {
 
         socket.on("sync", (sync_data) =>{
           console.log("Received Sync!");
-          console.log(sync_data);
           this.sync_local_player(sync_data);
         });
         
@@ -123,30 +117,34 @@ class Home extends Component {
           }
         });
       }
-    
-    render() {
-        const {connected, endpoint, isAdmin, accessToken} = this.state;
-        const {store} = this.props;
-        console.log(store);
+      
+      handleUsername = (e) => {
+        this.setState({
+          username: e.target.value
+        });
+      }
 
+      handleAccessToken = (e) => {
+        this.setState({
+          accessToken: e.target.value
+        });
+      }
+
+    render() {
+        const {connected, endpoint, isAdmin} = this.state;
         return(
             <div>
                 <h1> Home Page</h1>
                 <hr/>
-                <p>Admin: {isAdmin.toString()}</p>
-                <p>Connection Status: {connected.toString()}</p>
-                <p>Server URL: {endpoint}</p>
-                <p>Access Token: {accessToken}</p>
+                  <p>Admin: {isAdmin.toString()}</p>
+                  <p>Connection Status: {connected.toString()}</p>
+                  <p>Server URL: {endpoint}</p>
+                <br/>
+                <br/>
             </div>
         );
     }
 }
 
 
-//Redux Connection Functions
-
-const mapStateToProps = (state) => ({
-  store:state
-});
-
-export default connect(mapStateToProps, null)(Home);
+export default Lobby;

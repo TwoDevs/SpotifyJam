@@ -3,22 +3,30 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { ConnectedRouter } from 'react-router-redux';
-import store, { history } from './store';
+import {store, persistor, history } from './redux/configStore';
+
+//Persist
+import { PersistGate } from 'redux-persist/lib/integration/react'
 
 //Styling
 import './index.css';
 
 //Components
-import App from './containers/app/App';
+import App from './components/app/App';
 import registerServiceWorker from './registerServiceWorker';
+
+//const {store, persistor, history } = configureStore();
+
 
 ReactDOM.render(
     <Provider store = {store}>
-        <ConnectedRouter history = {history}>
-            <div>
-                <App/>
-            </div>
-        </ConnectedRouter>
+        <PersistGate persistor = {persistor} loading = {<div>LOADING</div>} onBeforeLift={() => console.log('lifted')}>
+            <ConnectedRouter history = {history}>
+                <div>
+                    <App/>
+                </div>
+            </ConnectedRouter>
+        </PersistGate>
     </Provider>, 
 
 document.getElementById('root'));
