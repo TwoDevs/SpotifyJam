@@ -1,17 +1,19 @@
 //React | Router | Redux
 import React, {Component} from 'react';
-import {Route, Link} from 'react-router-dom';
+import {Route, Link, Redirect} from 'react-router-dom';
 import {connect} from 'react-redux';
 
 //Components
 import {Menu, Icon} from 'antd';
-import Home from '../home/Home';
+import Splash from "../splash/Splash";
+import Lobby from '../lobby/Lobby';
 import Error from '../error/Error';
 import Todo from '../todo/Todo';
-import ReduxView from '../storeview/ReduxView';
+import JSONViewer from '../debug/JSONViewer';
 
 //Selectors
 import {selectCurrentPage} from '../../redux/selectors';
+import {selectAccessTokenExists} from '../../redux/selectors';
 
 //Styling
 import "./App.css";
@@ -25,7 +27,7 @@ const {server_url} = devMode ? devURLs : productionURLs;
 class App extends Component {
 
   render () {
-    const {currentTab} = this.props;
+    const {currentTab, sessionExists} = this.props;
     return (
       <div>
       
@@ -33,7 +35,12 @@ class App extends Component {
           <Menu selectedKeys={[currentTab]} mode="horizontal" theme = "dark">
             <Menu.Item key="/">
               <Link to="/">
-                <Icon type="home"/>Home
+                <Icon type="api"/>Splash
+              </Link>
+            </Menu.Item>
+            <Menu.Item key="/lobby">
+              <Link to="/lobby">
+                <Icon type="home"/>Lobby
               </Link>
             </Menu.Item>
             <Menu.Item key="/login">             
@@ -60,11 +67,12 @@ class App extends Component {
         </header>
         
         <main className = "App">
-          <Route exact path ="/" component = {Home}/>
+          <Route exact path ="/" component = {Splash}/>
+          <Route exact path="/lobby" render={ () => sessionExists ? <Lobby/> : <Redirect to="/"/> }/>
           <Route exact path="/error" component = {Error}/>
           <Route exact path="/todo" component = {Todo}/>
-          <Route exact path="/store" component = {ReduxView}/>
-          <ReduxView/>
+          <Route exact path="/store" component = {JSONViewer}/>
+          <JSONViewer/>
         </main>
 
       </div>
@@ -75,7 +83,8 @@ class App extends Component {
 
 const mapStateToProps = (state) => {
   return {
-    currentTab: selectCurrentPage(state)
+    currentTab: selectCurrentPage(state),
+    sessionExists: selectAccessTokenExists(state)
   };
 }
 

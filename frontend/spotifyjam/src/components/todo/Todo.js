@@ -19,14 +19,19 @@ const Todo = (props) => {
             status: "Completed"
         },
         {
-            title: "Create Redirect/Verification Page",
-            description: "https://reacttraining.com/react-router/web/example/auth-workflow",
-            status: "In Progress"
+            title: "Create Memoized Selectors with Reselect",
+            description: "https://github.com/reactjs/reselect",
+            status: "Completed"
         },
         {
-            title: "Create Memoized Selectors with Reselect",
-            description: "...",
-            status: "In Progress"
+            title: "Implement tabs and session persistance with React-Persist!",
+            description: "https://github.com/rt2zz/redux-persist",
+            status: "Completed"
+        },
+        {
+            title: "Create Redirect/Verification Page",
+            description: "https://reacttraining.com/react-router/web/example/auth-workflow",
+            status: "Completed"
         },
         {
             title: "Setup Simple Serverside Rendering",

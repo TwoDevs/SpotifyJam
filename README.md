@@ -19,7 +19,10 @@ Deploy Build
 1. npm install -g firebase-tools
 2. firebase login 
 3. yarn build (production build)
-4. firebase deploy
+4. Remove sourcemap (two ways) either:
+    a. delete the .map
+    b. export GENERATE_SOURCEMAP=false
+5. firebase deploy
 
 
 Server Development

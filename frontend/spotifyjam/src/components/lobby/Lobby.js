@@ -1,15 +1,9 @@
 //React | Redux | Router
 import React, {Component} from 'react';
-import {bindActionCreators} from 'redux';
-import {connect} from 'react-redux';
-import {setUsername, setAccessToken} from '../../redux/features/session';
 
 //Socket Libraries
 import socketIOClient from "socket.io-client";
 import {get_sync_dict_from_json} from '../../spotify/playerUtil';
-
-//Components
-import {Input, Icon, Button} from 'antd';
 
 //Keys & Mode
 import {devURLs, productionURLs} from '../../devKeys';
@@ -23,15 +17,13 @@ var spotifyAPI = new SpotifyWebAPI();
 
 
 
-class Home extends Component {
+class Lobby extends Component {
     constructor(props){
         super(props);
         this.state = {
           connected: false,
           endpoint: server_url,
           isAdmin: false,
-          accessToken: null,
-          username: "",
         };
       } 
 
@@ -139,37 +131,20 @@ class Home extends Component {
       }
 
     render() {
-        const {connected, endpoint, isAdmin, accessToken, username} = this.state;
-        const {setUsername, setAccessToken} = this.props;
+        const {connected, endpoint, isAdmin} = this.state;
         return(
             <div>
                 <h1> Home Page</h1>
                 <hr/>
-                <p>Admin: {isAdmin.toString()}</p>
-                <p>Connection Status: {connected.toString()}</p>
-                <p>Server URL: {endpoint}</p>
-                <p>Access Token: {accessToken}</p>
-                <Input
-                  placeholder="Enter your usename"
-                  prefix={<Icon type="key" style={{ color: 'rgba(0,0,0,.25)' }} />}
-                  onChange = {this.handleUsername}/>
-                <Button type="dashed" onClick = {() => setUsername(username)}>Submit Username</Button>
-                <Input
-                  placeholder="Enter your token"
-                  prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
-                  onChange = {this.handleAccessToken}/>
-                <Button type="dashed" onClick = {() => setAccessToken(accessToken)}>Submit Access Token</Button>
+                  <p>Admin: {isAdmin.toString()}</p>
+                  <p>Connection Status: {connected.toString()}</p>
+                  <p>Server URL: {endpoint}</p>
+                <br/>
+                <br/>
             </div>
         );
     }
 }
 
 
-//Redux Connection Functions
-
-const mapDispatchToProps = dispatch => bindActionCreators({
-  setUsername,
-  setAccessToken
-}, dispatch);
-
-export default connect(null, mapDispatchToProps)(Home);
+export default Lobby;
