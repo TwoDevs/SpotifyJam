@@ -13,8 +13,13 @@ var shortid = require('shortid');
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
 
+
+//User Management
+var default_room = "Lobby";
+var global_room = "GLOBAL";
+
 var RoomManager =  require('./room-manager.js');
-var rm = new RoomManager("Lobby");
+var rm = new RoomManager(global_room, default_room);
 
 var UserManager =  require('./user-manager.js');
 var um = new UserManager();
@@ -30,9 +35,6 @@ for (let j = 2; j < process.argv.length; j++) {
 //Key Setup
 var {devURLs, productionURLs, client_id, client_secret} = require('./devKeys'); 
 var {redirect_uri, frontend_url, server_url} = devMode ? devURLs : productionURLs; 
-
-//Player Management
-var default_room = "Lobby";
 
 
 //---Server Start---
@@ -159,15 +161,16 @@ app.get('/refresh_token', function(req, res) {
 });
 
 var createSocketSession = function(socket, user_req) {
-
     var {spotify_id, username, is_guest} = user_req;
     var user = um.addUser(socket, username, is_guest, spotify_id);
     if (user == null) {
         socket.emit("authenticate", {status: "failed", req: user_req});
     } else {
+
         console.log("\n\n~ Session Created - Member " +  user.username + " | Connected to socket: " + socket.id + " ~");
         rm.joinRoom(socket, default_room, function(){});
-        
+        socket.join(global_room);
+
         socket.on('disconnect', function(){
             console.log("\n\n~ Member " + user.username + " is Disconnecting. ~");
             rm.leaveRooms(socket);
@@ -201,11 +204,11 @@ var createSocketSession = function(socket, user_req) {
         });
 
         socket.emit("authenticate", {status: "succeeded", req: user_req, user: user});
+        rm.sendAvailableRooms(socket);
     }
 }
 
 io.on('connection', function(socket){
-
     socket.on('disconnect', function(){
         console.log("\n\n~ Unauthed socket " + socket.id + " is Disconnecting. ~");
     });
