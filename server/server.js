@@ -38,7 +38,8 @@ var default_room = "Lobby";
 //---Server Start---
 console.log("\n---------------------------")
 console.log("Server Started - Port: " + defaultPort);
-console.log("redirect_uri: " + redirect_uri);
+console.log("\nRedirect URI: " + redirect_uri);
+console.log("Frontend URL: " + frontend_url);
 var mode = devMode ? "Development Mode" : "Production Mode";
 console.log("\nRunning in", mode);
 console.log(  "---------------------------\n")
@@ -86,6 +87,7 @@ app.get('/callback', function(req, res) {
     var storedState = req.cookies ? req.cookies[stateKey] : null;
 
     if (state === null || state !== storedState) {
+        //TODO: ADD ERROR PAGE & URL
         res.redirect('/#' +
         querystring.stringify({
             error: 'state_mismatch'
@@ -120,12 +122,13 @@ app.get('/callback', function(req, res) {
             request.get(options, function(error, response, body) {});
 
             // we can also pass the token to the browser to make requests from there
-            res.redirect('/#' +
+            res.redirect(frontend_url + '#' +
             querystring.stringify({
                 access_token: access_token,
                 refresh_token: refresh_token
             }));
         } else {
+            //TODO: ADD ERROR PAGE & URL
             res.redirect('/#' +
             querystring.stringify({
                 error: 'invalid_token'

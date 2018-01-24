@@ -1,9 +1,11 @@
 import {LOAD_USERS, LOAD_ROOMS} from './lobbyConstants';
+import {CLEAR_SESSION} from '../session/sessionConstants';
 
 //Initial State
 const initialLobbyState = {
     users: [],
-    rooms: []
+    rooms: [],
+    connectionStatus: ""
 }
 
 //Lobby Reducer
@@ -18,6 +20,10 @@ export default (state = initialLobbyState, action) => {
             return {
                 ...state,
                 rooms: action.payload
+            };
+        case CLEAR_SESSION:
+            return {
+                initialLobbyState
             };
         default:
             return state;
