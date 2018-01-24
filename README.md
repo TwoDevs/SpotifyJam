@@ -5,6 +5,8 @@ Come jam with your friends with synchonized Spotify applications!
 Prototype Socket and Spotify Build:
 https://spotifyjam-299d8.firebaseapp.com/
 
+Make sure to add Redux Dev Tools! 
+https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en
 
 Frontend Development
 ---
@@ -33,6 +35,18 @@ Backend Development
 cd server/
 ```
 
+Run Local Server
+---
+_server_
+1. npm install
+2. node server.js
+
+_client_
+1. node test-client.js
+  * available
+  * create test-room
+  * join test-room
+  * send hello!
 
 Deploy Server
 ---
@@ -46,19 +60,6 @@ Deploy Server
     * kubectl set image deployment/(service-name) (service-name)=gcr.io/${PROJECT_ID}/(docker-proj-name):(docker-tag)
 7. kubectl expose deployment (service-name) --type=LoadBalancer --port (port-no) --target-port (user-port) _//(user-port) should match the port the client uses_
 
-
-Run Local Server
----
-_server_
-1. npm install
-2. node server.js
-
-_client_
-1. node test-client.js
-  * available
-  * create test-room
-  * join test-room
-  * send hello!
 
 Managing Packages 
 ---
