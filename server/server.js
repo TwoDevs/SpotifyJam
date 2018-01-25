@@ -110,8 +110,9 @@ app.get('/callback', function(req, res) {
         request.post(authOptions, function(error, response, body) {
         if (!error && response.statusCode === 200) {
 
-            var access_token = body.access_token,
-                refresh_token = body.refresh_token;
+            var {access_token, refresh_token, expires_in, scope} = body;
+
+            console.log(body);
             var options = {
                 url: 'https://api.spotify.com/v1/me',
                 headers: { 'Authorization': 'Bearer ' + access_token },
@@ -124,8 +125,9 @@ app.get('/callback', function(req, res) {
             // we can also pass the token to the browser to make requests from there
             res.redirect(frontend_url + '#' +
             querystring.stringify({
-                access_token: access_token,
-                refresh_token: refresh_token
+                access_token,
+                refresh_token,
+                expires_in
             }));
         } else {
             //TODO: ADD ERROR PAGE & URL

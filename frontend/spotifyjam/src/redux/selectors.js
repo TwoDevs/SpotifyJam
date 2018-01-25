@@ -34,3 +34,10 @@ export const selectLocationHash = createSelector(
         return hash;
     }
 )
+
+export const selectUsernameSet = createSelector(
+    [selectCurrentUsername],
+    username => {
+        return username === "";
+    }
+)

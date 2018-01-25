@@ -3,6 +3,7 @@ import {
     SET_USERNAME, 
     SET_ACCESS_TOKEN, 
     SET_REFRESH_TOKEN,
+    SET_EXPIRATION,
     VERIFICATION_FAILED,
     CLEAR_SESSION,
     VERIFICATION_SUCCESS, 
@@ -13,9 +14,10 @@ const initialSessionState = {
     username: "",
     access_token: "",
     refresh_token: "",
+    expires_in: "",
     currentRoom: "lobby",
     isGuest: true,
-    verified: false
+    verified: false,
 }
 
 //Session Reducer
@@ -35,6 +37,11 @@ export default (state = initialSessionState, action) => {
             return {
                 ...state,
                 refresh_token: action.payload
+            };
+        case SET_EXPIRATION:
+            return {
+                ...state,
+                expires_in: action.payload
             };
         case VERIFICATION_FAILED:
             return {
