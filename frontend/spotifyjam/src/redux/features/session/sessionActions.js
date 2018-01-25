@@ -3,12 +3,18 @@ import {
     SET_ACCESS_TOKEN, 
     SET_REFRESH_TOKEN,
     SET_EXPIRATION,
+    SET_SOCKET_AUTH,
     VERIFICATION_SUCCESS,
     VERIFICATION_FAILED,
     CLEAR_SESSION
 } from './sessionConstants';
 
+//Spotify Actions
+import {setSpotifyTokens} from '../spotify/spotifyActions';
+
+//Helper
 import {verifyTokens} from '../spotify/utils/tokenVerification';
+
 
 //Session Actions
 export const setUsername = (username) => {
@@ -47,6 +53,15 @@ export const setExpiration = (expires_in) => {
     }
 }
 
+export const setSocketAuth = (status) => {
+    return dispatch => {
+        dispatch({
+            type: SET_SOCKET_AUTH,
+            payload: status
+        });
+    }
+}
+
 export const verificationFailed = () => {
     return dispatch => {
         dispatch({
@@ -68,8 +83,7 @@ export const verify = (hash) => {
     return dispatch => {
         const {valid, access_token, refresh_token, expires_in} = verifyTokens(hash);
         if (valid){
-            dispatch(setAccessToken(access_token));
-            dispatch(setRefreshToken(refresh_token));
+            dispatch(setSpotifyTokens(access_token,refresh_token));
             dispatch(setExpiration(expires_in));
             dispatch(verificationSuccess());
         }

@@ -5,6 +5,7 @@ const getCurrentPage = (state) => state.router.location.pathname;
 const getUsername = (state) => state.session.username;
 const getLocationHash = (state) => state.router.location.hash;
 const getVerificationStatus = (state) => state.session.verified;
+const getSocketAuthStatus = (state) => state.session.socket_auth;
 
 //Memoized Selectors
 export const selectCurrentPage = createSelector(
@@ -39,5 +40,13 @@ export const selectUsernameSet = createSelector(
     [selectCurrentUsername],
     username => {
         return username === "";
+    }
+)
+
+export const selectSocketAuthStatus = createSelector(
+    [getSocketAuthStatus],
+    status => {
+        console.log("This is the selector ", status)
+        return status;
     }
 )

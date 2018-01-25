@@ -69,7 +69,7 @@ app.get('/login', function(req, res) {
     res.cookie(stateKey, state);
 
     // your application requests authorization
-    var scope = 'user-read-currently-playing user-modify-playback-state';
+    var scope = 'user-read-currently-playing user-modify-playback-state user-read-private';
     res.redirect('https://accounts.spotify.com/authorize?' +
         querystring.stringify({
         response_type: 'code',
@@ -114,7 +114,6 @@ app.get('/callback', function(req, res) {
 
             var {access_token, refresh_token, expires_in, scope} = body;
 
-            console.log(body);
             var options = {
                 url: 'https://api.spotify.com/v1/me',
                 headers: { 'Authorization': 'Bearer ' + access_token },

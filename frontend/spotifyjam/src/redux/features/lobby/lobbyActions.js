@@ -6,6 +6,8 @@ import {
     LOBBY_DISCONNECT
 } from './lobbyConstants';
 
+import {selectSocketAuthStatus} from '../../selectors';
+
 //Lobby Actions
 export const loadUsers = (users) => {
     return dispatch => {
@@ -27,9 +29,17 @@ export const loadRooms = (rooms) => {
     }
 }
 
-export const lobbyConnect = () => {
+export const lobbyConnect = (socket) => {
     return (dispatch, getState) => {
         const postData = getState();
         console.log(postData);
+        if (selectSocketAuthStatus(getState())) {
+            // Connect with old authentication
+            console.log("authenticated");
+  
+          } else {
+            // Re authenticate with the server
+            console.log("not authenticated");
+          }
     }
 }

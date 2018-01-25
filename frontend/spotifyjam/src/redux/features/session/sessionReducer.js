@@ -6,7 +6,8 @@ import {
     SET_EXPIRATION,
     VERIFICATION_FAILED,
     CLEAR_SESSION,
-    VERIFICATION_SUCCESS, 
+    VERIFICATION_SUCCESS,
+    SET_SOCKET_AUTH, 
 } from './sessionConstants'; 
 
 //Initial State
@@ -18,6 +19,7 @@ const initialSessionState = {
     currentRoom: "lobby",
     isGuest: true,
     verified: false,
+    socket_auth: false,
 }
 
 //Session Reducer
@@ -42,6 +44,11 @@ export default (state = initialSessionState, action) => {
             return {
                 ...state,
                 expires_in: action.payload
+            };
+        case SET_SOCKET_AUTH:
+            return {
+                ...state,
+                socket_auth: action.payload
             };
         case VERIFICATION_FAILED:
             return {

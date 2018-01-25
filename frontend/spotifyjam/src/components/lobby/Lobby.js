@@ -11,7 +11,7 @@ import socketIOClient from "socket.io-client";
 
 //Actions 
 import {lobbyConnect} from '../../redux/features/lobby/lobbyActions';
-import {setUsername} from '../../redux/features/session/sessionActions';
+import {setUsername, setSocketAuth} from '../../redux/features/session/sessionActions';
 
 //Selectors
 import {selectUsernameSet} from '../../redux/selectors';
@@ -34,7 +34,7 @@ class Lobby extends Component {
           username: ""
         };
         console.dir(socket);
-        lobbyConnect(socket);
+        props.lobbyConnect(socket);
       }
     
     generateUsername = () => {
@@ -69,11 +69,11 @@ class Lobby extends Component {
 
 const mapDispatchToProps = dispatch => bindActionCreators({
   lobbyConnect,
-  setUsername
+  setUsername,
 }, dispatch);
 
 const mapStateToProps = state => ({
-  usernameSet: selectUsernameSet(state)
+  usernameSet: selectUsernameSet(state),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Lobby);
