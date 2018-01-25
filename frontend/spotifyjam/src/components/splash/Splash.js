@@ -3,26 +3,23 @@ import React, {Component} from 'react';
 import {connect} from 'react-redux';
 
 //Selector
-import {selectAccessTokenExists} from '../../redux/selectors';
+import {selectVerified} from '../../redux/selectors';
 
 //Components 
 import Particles from 'react-particles-js';
-import {Card, Button} from 'antd';
+import SplashCard from './SplashCard';
 
 //Particle Config
 import {particles} from './particlesjs-config';
 
 class Splash extends Component {
     render() {
-        const {sessionExists} = this.props;
+        const {verified} = this.props;
         return (
             <div>
+            <h3 style={{ color: "white", position: "absolute", top: "80%", left: "75%" }} >Access Token Exists: {verified}</h3>
             <Particles params={{particles}} style ={{backgroundColor: "black"}}/>
-                <Card title="Spotify Jam!" style={{ width: 300, position: "absolute", top: "40%", left: "42%", textAlign: "center" }}>
-                    <p>Come jam out to songs together!</p>
-                    <p>Access Token Exists: {sessionExists.toString()}</p>
-                    <Button type="primary" size='large'>Verify Spotify</Button>
-                </Card>
+                <SplashCard/>
             </div>
         );
     }
@@ -30,7 +27,7 @@ class Splash extends Component {
 
 const mapStateToProps = (state) => {
     return {
-        sessionExists: selectAccessTokenExists(state)
+        verified: selectVerified(state)
     };
 }
 export default connect(mapStateToProps, null)(Splash);

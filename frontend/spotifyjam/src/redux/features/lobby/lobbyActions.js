@@ -1,4 +1,10 @@
-import {LOAD_USERS, LOAD_ROOMS} from './lobbyConstants';
+//Action Constants
+import {
+    LOAD_USERS, 
+    LOAD_ROOMS,
+    LOBBY_CONNECT,
+    LOBBY_DISCONNECT
+} from './lobbyConstants';
 
 //Lobby Actions
 export const loadUsers = (users) => {
@@ -18,5 +24,12 @@ export const loadRooms = (rooms) => {
             type: LOAD_ROOMS,
             payload: rooms
         });
+    }
+}
+
+export const lobbyConnect = () => {
+    return (dispatch, getState) => {
+        const postData = getState();
+        console.log(postData);
     }
 }
