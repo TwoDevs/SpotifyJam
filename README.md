@@ -68,3 +68,18 @@ Managing Packages
 1. rm -rf node_modules
 2. npm cache clean
 3. yarn (reinstall)
+
+Stack
+---
+- React
+- React-Redux
+- React-Router-Dom
+- Redux-Thunk
+- React-Router-Redux
+- Redux-Persist
+- Reselect
+- Node with OOP (User/Room Classes)
+- Socket.io
+- Spotify-Web-API-js
+- Firebase Hosting
+- Google Cloud Kubernetes
