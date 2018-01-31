@@ -23,7 +23,7 @@ export default (state = initialLobbyState, action) => {
             };
         case CLEAR_SESSION:
             return {
-                initialLobbyState
+                ...initialLobbyState
             };
         default:
             return state;

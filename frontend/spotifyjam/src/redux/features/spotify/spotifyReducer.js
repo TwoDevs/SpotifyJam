@@ -2,8 +2,12 @@ import {
     GET_PROFILE_LOADING,
     GET_PROFILE_SUCCESS,
     GET_PROFILE_FAILURE,
+    SET_SOCKET_AUTH, 
 } from './spotifyConstants';
 
+import {
+    CLEAR_SESSION
+} from '../session/sessionConstants';
 
 //Initial State
 const initialSpotifyState = {
@@ -19,6 +23,7 @@ const initialSpotifyState = {
     type: null,
     uri: null,
     loading: false,
+    socket_auth: false,
 }
 
 //Session Reducer
@@ -27,18 +32,27 @@ export default (state = initialSpotifyState, action) => {
         case GET_PROFILE_LOADING:
             return {
                 ...state,
-                loading: true
+                loading: true,
+                socket_auth: true
             };
         case GET_PROFILE_SUCCESS:
-            debugger;
             return Object.assign({}, state, action.payload, {loading: false}) ;
         
         case GET_PROFILE_FAILURE:
             return {
                 ...state,
-                loading: false
+                loading: false,
+                socket_auth: false
             };
-
+        case SET_SOCKET_AUTH:
+            return {
+                ...state,
+                socket_auth: action.payload
+            };
+        case CLEAR_SESSION:
+            return {
+                ...initialSpotifyState
+            };
         default:
             return state;
     }
