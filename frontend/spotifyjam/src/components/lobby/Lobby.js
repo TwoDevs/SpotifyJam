@@ -4,16 +4,10 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
 //Components
-import {Modal, Spin, Alert} from 'antd';
+import {Spin} from 'antd';
 
 class Lobby extends Component {
-  constructor(props){
-    super(props);
-    
-    this.state = {
 
-    };
-  }
     render() {
         return(
             <div>
@@ -25,5 +19,4 @@ class Lobby extends Component {
 }
 
 
-
-export default Lobby;
+export default connect(null, null)(Lobby);

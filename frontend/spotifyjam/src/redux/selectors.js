@@ -6,6 +6,7 @@ const getURLHash = (state) => state.router.location.hash;
 const getAccessToken = (state) => state.session.access_tokens;
 const getLoadingStatus = (state) => state.session.status;
 const getSession = (state) => state.session;
+const getSessionUser = (state) => state.session.user;
 
 //Memoized Selectors
 export const selectCurrentPage = createSelector(
@@ -40,5 +41,13 @@ export const selectAuthorizationStatus = createSelector(
     [getSession],
     session => {
         return (session.user.display_name && session.access_token && session.user.type);
+    }
+)
+
+export const selectUserReq = createSelector(
+    [getSessionUser],
+    user => {
+        const {id, display_name} = user;
+        return {id, display_name};
     }
 )

@@ -2,7 +2,7 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
-import {Redirect, withRouter} from 'react-router-dom';
+import {withRouter} from 'react-router-dom';
 
 //Components
 import {Steps, Icon, Spin} from 'antd';
@@ -17,13 +17,12 @@ const Step = Steps.Step;
 
 class Verification extends Component {
 
-    //Lifecycle Functions
     componentDidMount(){
         this.props.authorize();
     }
 
     render() {
-        const {tokenStatus, profileStatus, auth} = this.props.loadingStatus;
+        const {tokenStatus, profileStatus} = this.props.loadingStatus;
         return (
             <div>
                 <div>
@@ -43,10 +42,6 @@ class Verification extends Component {
     }
 }
 
-// {auth ? 
-//     <Redirect to='/lobby'/> 
-//     :
-// }
 
 const mapDispatchToProps = dispatch => bindActionCreators({
     authorize

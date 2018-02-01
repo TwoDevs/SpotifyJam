@@ -37,7 +37,8 @@ const initialSessionState = {
         product: null,
         type: null,
         uri: null,
-    }
+    },
+    socket: null
 }
 
 //Session Reducer
@@ -50,7 +51,7 @@ export default (state = initialSessionState, action) => {
         case GET_TOKENS_SUCCESS:
             return Object.assign({}, state, 
                 {status: Object.assign({}, state.status, {tokenStatus: "finish"})}, 
-                {access_token: action.payload});
+                {access_token: action.payload, isGuest: false});
         case GET_TOKENS_FAIL:
             return Object.assign({}, state, {
                 status: Object.assign({}, state.status, {tokenStatus: "fail"})

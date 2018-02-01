@@ -19,17 +19,18 @@ import {
     verifyTokens,
     setSpotifyTokens,
     getProfile
-} from './API/spotifyFunctions';
+} from '../API/spotifyFunctions';
 
 import {
     redirectToLobby,
     redirectToHome
-} from './API/historyFunctions';
+} from '../API/historyFunctions';
 
 //Selectors
 import {
     selectURLHash,
-    selectAuthorizationStatus
+    selectAuthorizationStatus,
+    selectUserReq,
 } from '../selectors';
 
 
@@ -129,3 +130,4 @@ export const clearSession = () => {
         });
     }
 }
+
