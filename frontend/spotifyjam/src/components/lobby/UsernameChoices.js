@@ -1,15 +1,10 @@
 //React
 import React, {Component} from 'react';
-import {connect} from 'react-redux';
 
 //Components
 import {Button, Radio} from 'antd';
 
-//Selectors
-import {selectSpotifyName} from '../../redux/selectors';
-
 //Name Gen
-var generateName = require('sillyname');
 var generate_names = require('name-jam-rator');
 
 const RadioGroup = Radio.Group;
@@ -32,7 +27,6 @@ class UsernameChoices extends Component {
 
     generateUsername = () => {
         const {handleUsername} = this.props;
-        const {randomUsername} = this.state;
         const newRandomUsername = generate_names()[0];
         this.setState({
           randomUsername: newRandomUsername
@@ -65,8 +59,4 @@ const RadioStyle = {
     lineHeight: '30px',
 };
 
-const mapStateToProps = (state) => ({
-    display_name: selectSpotifyName(state)
-});
-
-export default connect(mapStateToProps, null)(UsernameChoices);
+export default UsernameChoices;

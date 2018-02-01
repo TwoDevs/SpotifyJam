@@ -1,5 +1,16 @@
+//Spotify Instance
+import Spotify from 'spotify-web-api-js';
+const spotifyApi = new Spotify();
 const queryString = require('query-string');
 
+//Spotify Interface
+export const setSpotifyTokens = (access_token, refresh_token) => {
+    spotifyApi.setAccessToken(access_token);    
+}
+
+export const getProfile = () => {    
+    return spotifyApi.getMe();
+}
 
 export const verifyTokens = (hash) => {
     //Logic for checking tokens and false tokens

@@ -1,7 +1,8 @@
 //Redux
 import { createStore, applyMiddleware } from 'redux';
 import { routerMiddleware } from 'react-router-redux';
-import createHistory from 'history/createBrowserHistory';
+import {history} from './session/API/historyFunctions';
+
 import rootReducer from './rootReducer';
 import thunk from 'redux-thunk';
 
@@ -13,14 +14,11 @@ import storage from 'redux-persist/lib/storage'
 const persistConfig = {
     key: 'root',
     storage,
-    whitelist: ['session', 'user'],
+    whitelist: ['session'],
 }
 
 //Persist Root Reducer
 const persistedReducer = persistReducer(persistConfig, rootReducer)
-
-//History
-const history = createHistory();
 
 //Thunk and Router Middleware
 const middleware = [
@@ -36,5 +34,5 @@ const store = createStore(
 );
 const persistor = persistStore(store);
 
-export {store, persistor, history};
+export {store, persistor};
 
