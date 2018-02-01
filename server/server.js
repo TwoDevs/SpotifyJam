@@ -13,8 +13,13 @@ var shortid = require('shortid');
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
 
+
+//User Management
+var default_room = "Lobby";
+var global_room = "GLOBAL";
+
 var RoomManager =  require('./room-manager.js');
-var rm = new RoomManager("Lobby");
+var rm = new RoomManager(global_room, default_room);
 
 var UserManager =  require('./user-manager.js');
 var um = new UserManager();
@@ -29,10 +34,7 @@ for (let j = 2; j < process.argv.length; j++) {
 
 //Key Setup
 var {devURLs, productionURLs, client_id, client_secret} = require('./devKeys'); 
-var {redirect_uri, frontend_url, server_url} = devMode ? devURLs : productionURLs; 
-
-//Player Management
-var default_room = "Lobby";
+var {redirect_uri, frontend_url, server_url, error_url} = devMode ? devURLs : productionURLs; 
 
 
 //---Server Start---
@@ -40,6 +42,7 @@ console.log("\n---------------------------")
 console.log("Server Started - Port: " + defaultPort);
 console.log("\nRedirect URI: " + redirect_uri);
 console.log("Frontend URL: " + frontend_url);
+console.log("Error URL: " + error_url);
 var mode = devMode ? "Development Mode" : "Production Mode";
 console.log("\nRunning in", mode);
 console.log(  "---------------------------\n")
@@ -58,6 +61,9 @@ var generateRandomString = function(length) {
   
 var stateKey = 'spotify_auth_state';
 
+
+// Express Spotify Verification
+// ----------------------------
 app.use(express.static(__dirname + '/public'))
    .use(cookieParser());
 
@@ -67,7 +73,7 @@ app.get('/login', function(req, res) {
     res.cookie(stateKey, state);
 
     // your application requests authorization
-    var scope = 'user-read-currently-playing user-modify-playback-state';
+    var scope = 'user-read-currently-playing user-modify-playback-state user-read-private';
     res.redirect('https://accounts.spotify.com/authorize?' +
         querystring.stringify({
         response_type: 'code',
@@ -88,7 +94,7 @@ app.get('/callback', function(req, res) {
 
     if (state === null || state !== storedState) {
         //TODO: ADD ERROR PAGE & URL
-        res.redirect('/#' +
+        res.redirect(error_url+ '#' +
         querystring.stringify({
             error: 'state_mismatch'
         }));
@@ -110,8 +116,8 @@ app.get('/callback', function(req, res) {
         request.post(authOptions, function(error, response, body) {
         if (!error && response.statusCode === 200) {
 
-            var access_token = body.access_token,
-                refresh_token = body.refresh_token;
+            var {access_token, refresh_token, expires_in, scope} = body;
+
             var options = {
                 url: 'https://api.spotify.com/v1/me',
                 headers: { 'Authorization': 'Bearer ' + access_token },
@@ -124,12 +130,13 @@ app.get('/callback', function(req, res) {
             // we can also pass the token to the browser to make requests from there
             res.redirect(frontend_url + '#' +
             querystring.stringify({
-                access_token: access_token,
-                refresh_token: refresh_token
+                access_token,
+                refresh_token,
+                expires_in
             }));
         } else {
             //TODO: ADD ERROR PAGE & URL
-            res.redirect('/#' +
+            res.redirect(error_url + '#' +
             querystring.stringify({
                 error: 'invalid_token'
             }));
@@ -161,16 +168,21 @@ app.get('/refresh_token', function(req, res) {
   });
 });
 
-var createSocketSession = function(socket, user_req) {
 
+// Socket.io Session Code
+// ----------------------
+
+var createSocketSession = function(socket, user_req) {
     var {spotify_id, username, is_guest} = user_req;
     var user = um.addUser(socket, username, is_guest, spotify_id);
     if (user == null) {
         socket.emit("authenticate", {status: "failed", req: user_req});
     } else {
+
         console.log("\n\n~ Session Created - Member " +  user.username + " | Connected to socket: " + socket.id + " ~");
         rm.joinRoom(socket, default_room, function(){});
-        
+        socket.join(global_room);
+
         socket.on('disconnect', function(){
             console.log("\n\n~ Member " + user.username + " is Disconnecting. ~");
             rm.leaveRooms(socket);
@@ -204,11 +216,11 @@ var createSocketSession = function(socket, user_req) {
         });
 
         socket.emit("authenticate", {status: "succeeded", req: user_req, user: user});
+        rm.sendAvailableRooms(socket);
     }
 }
 
 io.on('connection', function(socket){
-
     socket.on('disconnect', function(){
         console.log("\n\n~ Unauthed socket " + socket.id + " is Disconnecting. ~");
     });

@@ -1,7 +1,8 @@
 var method = RoomManager.prototype;
 
-function RoomManager(default_room) {
+function RoomManager(global_room, default_room) {
     this._default_room = default_room;
+    this._global_room = global_room;
     this.rooms = { [default_room] : {admins: [], members: []}};
 }
 
@@ -13,12 +14,16 @@ method.isDefaultRoom = function(room_name) {
     return (room_name == this._default_room);
 }
 
+method.isGlobalRoom = function(room_name) {
+    return (room_name == this._global_room);
+}
+
 method.sendAvailableRooms = function(socket) {
     socket.emit('availableRooms', {rooms: Object.keys(this.rooms), currentRoom: this.currentRoom(socket)});
 }
 
 method.broadcastAvailableRooms = function(io) {
-    io.emit('availableRooms', {rooms: Object.keys(this.rooms)});
+    io.to(this._global_room).emit('availableRooms', {rooms: Object.keys(this.rooms)});
 }
 
 method.currentRoom = function(socket) {
@@ -34,6 +39,8 @@ method.currentRoom = function(socket) {
 
 method.createRoom = function(room_name) {
     if (this.isDefaultRoom(room_name)) {
+        return;
+    } else if (this.isGlobalRoom(room_name)) {
         return;
     } else if (this.existsRoom(room_name)) {
         return;
@@ -89,11 +96,12 @@ method.joinRoom = function(socket, room_name, callback) {
 method.deleteRoom = function(room_name) {
     if (isDefaultRoom(room_name)) {
         return;
+    } else if (isGlobalRoom(room_name)) {
+        return;
     } else if (existsRoom(room_name)) {
         io.to(room_name).emit('joinRoom', this._default_room);
         delete this.rooms[room_name];
     }
 }
-
 
 module.exports = RoomManager;

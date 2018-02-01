@@ -2,44 +2,55 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
+import {withRouter} from 'react-router-dom';
 
 //Components
-import VerificationCard from './VerificationCard';
-import { withRouter } from 'react-router-dom'
-
-//Selectors
-import {selectLocationHash} from '../../redux/selectors';
+import {Steps, Icon, Spin} from 'antd';
 
 //Actions
-import {verify} from '../../redux/features/session/sessionActions';
+import {authorize} from '../../redux/session/sessionActions';
+
+//Selectors
+import {selectLoadingStatus} from '../../redux/selectors';
+
+const Step = Steps.Step;
 
 class Verification extends Component {
 
-    redirectToLobby = () => {
-        const {history} = this.props;
-        history.push('/lobby');
-    }
-
-    //Lifecycle Functions
     componentDidMount(){
-        const {verify, hash} = this.props;
-        verify(hash);
-        this.redirectToLobby();
+        this.props.authorize();
     }
 
     render() {
+        const {tokenStatus, profileStatus} = this.props.loadingStatus;
         return (
-            <VerificationCard/>
+            <div>
+                <div>
+                    <Spin size = "large" style = {{textAlign: 'center', width: '100%', left: '40%'}}/>
+                    <Steps>
+                        
+                        <Step status={tokenStatus} title="Retrieving Tokens" 
+                            icon={<Icon type= {tokenStatus === "process" ? "loading" : "key"} />} />
+                        
+                        <Step status={profileStatus} title="Loading Profile" 
+                            icon={<Icon type={profileStatus === "process" ? "loading" : "solution"} />} />
+                    
+                    </Steps>
+                </div>
+            </div>
         );
     }
 }
 
-const mapStateToProps = (state) => ({
-    hash: selectLocationHash(state),
-});
 
 const mapDispatchToProps = dispatch => bindActionCreators({
-    verify
+    authorize
 }, dispatch);
+
+const mapStateToProps = (state) => {
+    return {
+        loadingStatus: selectLoadingStatus(state)
+    };
+}
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Verification));

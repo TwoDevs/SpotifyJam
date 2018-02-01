@@ -3,7 +3,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { ConnectedRouter } from 'react-router-redux';
-import {store, persistor, history } from './redux/configStore';
+import {store, persistor } from './redux/configStore';
+import {history} from './redux/API/historyFunctions';
 
 //Persist
 import { PersistGate } from 'redux-persist/lib/integration/react'
@@ -21,7 +22,7 @@ import {Spin} from 'antd';
 
 ReactDOM.render(
     <Provider store = {store}>
-        <PersistGate persistor = {persistor} loading = {<Spin size="large" />} onBeforeLift={() => console.log('lifted')}>
+        <PersistGate persistor = {persistor} loading = {<Spin size="large"/>}>
             <ConnectedRouter history = {history}>
                 <div>
                     <App/>

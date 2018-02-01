@@ -1,9 +1,5 @@
 //React | Redux
 import React, {Component} from 'react';
-import {connect} from 'react-redux';
-
-//Selector
-import {selectVerified} from '../../redux/selectors';
 
 //Components 
 import Particles from 'react-particles-js';
@@ -25,9 +21,4 @@ class Splash extends Component {
     }
 }
 
-const mapStateToProps = (state) => {
-    return {
-        verified: selectVerified(state)
-    };
-}
-export default connect(mapStateToProps, null)(Splash);
+export default Splash;
