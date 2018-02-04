@@ -36,12 +36,15 @@ class Lobby extends Component {
     constructor(props){
         super(props);
 
+        const username = props.user_req.display_name;
+
         this.state = {
             rooms: [],
             currentRoom: "",
             newRoom: "",
             messages: [],
-            newMessage: ""
+            newMessage: "",
+            username
         };
 
         //Socket Event Listeners
@@ -84,6 +87,7 @@ class Lobby extends Component {
 
     }
 
+    //Room Handling
     submitNewRoom = () => {
         const {newRoom} = this.state;
         io.emit('createRoom', {room_name: newRoom});
@@ -91,37 +95,34 @@ class Lobby extends Component {
             newRoom: ""
         });
     }
-
-
-    submitNewMessage = () => {
-        const {newMessage} = this.state;
-
-        const currState = this.state;
-        currState.messages.push(newMessage);
-
-        this.setState(currState);
-        io.emit('msg', {mesage_text: newMessage});
-        
-        this.setState({
-            newMessage: ""
-        });
-    }
-
-
     joinRooms = () => {
         const {newRoom} = this.state;
         io.emit('joinRoom', {room_name: newRoom});
     }
-
     handleRoomNameInput = (e) => {
         this.setState({
             newRoom: e.target.value
         });
     }
 
+
+    //Messaging
     handleMessageInput = (e) => {
         this.setState({
             newMessage: e.target.value
+        });
+    }
+    submitNewMessage = () => {
+        const {newMessage, username} = this.state;
+
+        const currState = this.state;
+        currState.messages.push(username + ": " + newMessage);
+
+        this.setState(currState);
+        io.emit('msg', {mesage_text: newMessage});
+        
+        this.setState({
+            newMessage: ""
         });
     }
 
