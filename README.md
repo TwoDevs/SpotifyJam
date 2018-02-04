@@ -56,6 +56,7 @@ Deploy Server
 4. docker build -t gcr.io/${PROJECT_ID}/(docker-proj-name):(docker-tag) .  _//(docker-proj-name) = spotifyjam_
 5. gcloud docker -- push gcr.io/${PROJECT_ID}/(docker-proj-name):(docker-tag) _// push docker build to gcloud_
 6. _//(port-no) should match the port the server uses, (service-name) = spotifyjam-backend_
+    * gcloud container clusters get-credentials (service-name) --zone us-central1-a --project ${PROJECT_ID}
     * kubectl run (service-name) --image=gcr.io/${PROJECT_ID}/(docker-proj-name):(docker-tag) --port (port-no) 
     * kubectl set image deployment/(service-name) (service-name)=gcr.io/${PROJECT_ID}/(docker-proj-name):(docker-tag)
 7. kubectl expose deployment (service-name) --type=LoadBalancer --port (port-no) --target-port (user-port) _//(user-port) should match the port the client uses_
