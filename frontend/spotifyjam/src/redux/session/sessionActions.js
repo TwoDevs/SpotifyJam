@@ -5,8 +5,8 @@ import {
     GET_TOKENS_FAIL,
     
     GET_PROFILE_LOADING,
-    GET_PROFILE_FAIL,
     GET_PROFILE_SUCCESS,
+    GET_PROFILE_FAIL,
 
     AUTH_SUCCESS,
     AUTH_FAIL,
@@ -30,7 +30,6 @@ import {
 import {
     selectURLHash,
     selectAuthorizationStatus,
-    selectUserReq,
 } from '../selectors';
 
 
@@ -99,10 +98,11 @@ export const setProfile = () => {
 
 export const authorize = () => {
     return (dispatch, getState) => {
-        //Shoot off token setting (synchronous)
+        //Set tokens (synchronous)
         dispatch(setTokens());
-        //Start profile retrieval (update status async)
-        dispatch(setProfile()).then(() => {
+        //Profile retrieval (update status async)
+        dispatch(setProfile())
+        .then(() => {
             if (selectAuthorizationStatus(getState())){
                 //Dispatch Router Change
                 dispatch(redirectToLobby());
