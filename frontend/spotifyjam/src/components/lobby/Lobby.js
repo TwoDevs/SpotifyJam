@@ -39,7 +39,9 @@ class Lobby extends Component {
         this.state = {
             rooms: [],
             currentRoom: "",
-            newRoom:""
+            newRoom: "",
+            messages: [],
+            newMessage: ""
         };
 
         //Socket Event Listeners
@@ -74,7 +76,10 @@ class Lobby extends Component {
         });
         //Retrieve msgs
         io.on('msg', (res) => {
-            //
+            debugger;
+            const currState = this.state;
+            currState.messages.push(res.username + ": " + res.message_text);
+            this.setState(currState);
         });
 
     }
@@ -82,7 +87,26 @@ class Lobby extends Component {
     submitNewRoom = () => {
         const {newRoom} = this.state;
         io.emit('createRoom', {room_name: newRoom});
+        this.setState({
+            newRoom: ""
+        });
     }
+
+
+    submitNewMessage = () => {
+        const {newMessage} = this.state;
+
+        const currState = this.state;
+        currState.messages.push(newMessage);
+
+        this.setState(currState);
+        io.emit('msg', {mesage_text: newMessage});
+        
+        this.setState({
+            newMessage: ""
+        });
+    }
+
 
     joinRooms = () => {
         const {newRoom} = this.state;
@@ -95,10 +119,14 @@ class Lobby extends Component {
         });
     }
 
-    
+    handleMessageInput = (e) => {
+        this.setState({
+            newMessage: e.target.value
+        });
+    }
 
     render() {
-        const {rooms, currRoom} = this.state;
+        const {rooms, currRoom, messages} = this.state;
         const roomList = rooms.map((roomName) => {
             <div>
                 <p id="roomName"> {roomName} </p>
@@ -123,12 +151,11 @@ class Lobby extends Component {
               <hr/>
               <List
                 size="small"
-                header={<div>Header</div>}
-                footer={<div>Footer</div>}
-                bordered
-                dataSource={data}
+                dataSource={messages}
                 renderItem={item => (<List.Item>{item}</List.Item>)}
                 />
+                <Input onChange={this.handleMessageInput}/>
+                <Button onClick={this.submitNewMessage}>Send Message</Button>
               <br/>
               <br/>
             </div>
