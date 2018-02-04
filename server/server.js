@@ -171,6 +171,40 @@ app.get('/refresh_token', function(req, res) {
 
 // Socket.io Session Code
 // ----------------------
+var bindUser = function(socket, user) {
+    socket.join(global_room);
+    socket.on('disconnect', function(){
+        console.log("\n\n~ Member " + user.username + " is Disconnecting. ~");
+        // rm.leaveRooms(socket);
+        // um.deleteUser(user);
+        socket.broadcast.emit('disconnected', {username: user.username});
+    });
+
+    socket.on('sync', function(data){
+        socket.broadcast.to(rm.currentRoom(socket)).emit('sync', data);
+    });
+
+    socket.on('msg', function(message){
+        socket.broadcast.to(rm.currentRoom(socket)).emit('msg', {username: user.username, message_text: message.message_text});
+    });
+
+    socket.on('availableRooms', function() {
+        rm.sendAvailableRooms(socket);
+    });
+
+    socket.on('createRoom', function(data) {
+        console.log("Creating room " + data.room_name);
+        rm.createRoom(data.room_name);
+        rm.broadcastAvailableRooms(io);
+    });
+
+    socket.on('joinRoom', function(data) {
+        rm.joinRoom(socket, data.room_name, function() {
+            console.log(user.username + " joined room " + rm.currentRoom(socket));
+            rm.sendAvailableRooms(socket);
+        });
+    });
+}
 
 var createSocketSession = function(socket, user_req) {
     var {spotify_id, username, is_guest} = user_req;
@@ -178,45 +212,27 @@ var createSocketSession = function(socket, user_req) {
     if (user == null) {
         socket.emit("authenticate", {status: "failed", req: user_req});
     } else {
-
         console.log("\n\n~ Session Created - Member " +  user.username + " | Connected to socket: " + socket.id + " ~");
         rm.joinRoom(socket, default_room, function(){});
-        socket.join(global_room);
-
-        socket.on('disconnect', function(){
-            console.log("\n\n~ Member " + user.username + " is Disconnecting. ~");
-            rm.leaveRooms(socket);
-            um.deleteUser(user);
-            socket.broadcast.emit('disconnected', {username: user.username});
-        });
-
-        socket.on('sync', function(data){
-            socket.broadcast.to(rm.currentRoom(socket)).emit('sync', data);
-        });
-
-        socket.on('msg', function(message){
-            socket.broadcast.to(rm.currentRoom(socket)).emit('msg', {username: user.username, message_text: message.message_text});
-        });
-
-        socket.on('availableRooms', function() {
-            rm.sendAvailableRooms(socket);
-        });
-
-        socket.on('createRoom', function(data) {
-            console.log("Creating room " + data.room_name);
-            rm.createRoom(data.room_name);
-            rm.broadcastAvailableRooms(io);
-        });
-
-        socket.on('joinRoom', function(data) {
-            rm.joinRoom(socket, data.room_name, function() {
-                console.log(user.username + " joined room " + rm.currentRoom(socket));
-                rm.sendAvailableRooms(socket);
-            });
-        });
-
+        bindUser(socket, user);
         socket.emit("authenticate", {status: "succeeded", req: user_req, user: user});
         rm.sendAvailableRooms(socket);
+    }
+}
+
+var recreateSocketSession = function(socket, req_user) {
+    if (req_user == null) {
+        socket.emit("reauthenticate", {status: "failed", req: req_user});
+    } else {
+
+        if (um.existsUser(req_user.user_id)) {
+            var user = um.getUser(req_user.user_id);
+            console.log("\n\n~ Session Rejoined - Member " +  user.username + " | Connected to socket: " + socket.id + " ~");
+            rm.joinRoom(socket, default_room, function(){});
+            bindUser(socket, user);
+            socket.emit("reauthenticate", {status: "succeeded", req: user, user: user});
+            rm.sendAvailableRooms(socket);
+        }
     }
 }
 
@@ -227,5 +243,9 @@ io.on('connection', function(socket){
 
     socket.on('authenticate', function(user_req){
         createSocketSession(socket, user_req);
+    });
+
+    socket.on('reauthenticate', function(user){
+        recreateSocketSession(socket, user);
     });
 });
