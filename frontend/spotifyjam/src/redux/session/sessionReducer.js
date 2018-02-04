@@ -1,18 +1,28 @@
-//Action Constants
+//Constants
 import {
     GET_TOKENS_LOADING,
     GET_TOKENS_SUCCESS,
     GET_TOKENS_FAIL,
-
+    
     GET_PROFILE_LOADING,
     GET_PROFILE_SUCCESS,
     GET_PROFILE_FAIL,
+
+    SOCKET_AUTH_LOADING,
+    SOCKET_AUTH_SUCCESS,
+    SOCKET_AUTH_FAIL,
+
+    SOCKET_REAUTH_LOADING,
+    SOCKET_REAUTH_SUCCESS,
+    SOCKET_REAUTH_FAIL,
+
+    CONNECTED,
 
     AUTH_SUCCESS,
     AUTH_FAIL,
 
     CLEAR_SESSION,
-} from './sessionConstants'; 
+} from './sessionConstants';
 
 //Initial State
 const initialSessionState = {
@@ -23,6 +33,7 @@ const initialSessionState = {
     status: {
         tokenStatus: "wait",
         profileStatus: "wait",
+        socketStatus: "wait",
         auth: false,
     },
     user: {
@@ -38,7 +49,8 @@ const initialSessionState = {
         type: null,
         uri: null,
     },
-    socket: null
+    res: null,
+    connected: false
 }
 
 //Session Reducer
@@ -68,6 +80,23 @@ export default (state = initialSessionState, action) => {
             return Object.assign({}, state, {
                 status: Object.assign({}, state.status, {profileState: "fail"})
             });
+        case SOCKET_REAUTH_LOADING:
+        case SOCKET_AUTH_LOADING:
+            return Object.assign({}, state, {
+                status: Object.assign({}, state.status, {socketStatus: "process"})
+            });
+        case SOCKET_REAUTH_SUCCESS:
+        case SOCKET_AUTH_SUCCESS:
+            return Object.assign({}, state, 
+                {status: Object.assign({}, state.status, {socketStatus: "finish"})}, 
+                {res: action.payload});
+        case SOCKET_REAUTH_FAIL:
+        case SOCKET_AUTH_FAIL:
+            return Object.assign({}, state, {
+                status: Object.assign({}, state.status, {socketStatus: "fail"})
+            });
+        case CONNECTED:
+            return Object.assign({}, state, {connected: true});
         case AUTH_SUCCESS:
             return Object.assign({}, state, {
                 status: Object.assign({}, state.status, {auth: true})

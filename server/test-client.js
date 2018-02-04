@@ -57,6 +57,22 @@ socket.on("authenticate", (auth_status) => {
     }
 });
 
+socket.on("reauthenticate", (auth_status) => {
+    var {status, req} = auth_status;
+    if (status == "failed") {
+        console.log("reauthentication failed for: ");
+        console.log("username: " + req.username);
+        console.log("spotify-id: " + req.spotify_id);
+        console.log("is_guest: " + req.is_guest);
+    } else if (status == "succeeded") {
+        console.log("reauthentication succeeded for: ");
+        console.log("username: " + auth_status.user.username);
+        console.log("spotify-id: " + auth_status.user.spotify_id);
+        console.log("is_guest: " + auth_status.user.is_guest);
+        console.log("Your user_id is " + auth_status.user.user_id);
+    }
+});
+
 var dispRooms = function(){
     console.log("Current Room: " + state.currentRoom);
     console.log("Available Rooms: " + state.rooms);
@@ -83,7 +99,7 @@ rl.on('line', (line) => {
             if (command == "authenticate") {
                 var isGuestIndex = text.indexOf(" ");
                 if (isGuestIndex < 0) {
-                    console.log("authenticate malformed: <is_guest> is missing");
+                    console.log(" malformed: <is_guest> is missing");
                 } else {
                     var is_guest = text.substr(0, isGuestIndex); // Gets the first part
                     var text = text.substr(isGuestIndex + 1);  // Gets the second part
@@ -101,6 +117,15 @@ rl.on('line', (line) => {
                         socket.emit("authenticate", user_req);
                     }
                 }
+
+            } else if (command == "reauthenticate") {
+                
+                var user_id = text;
+                var user_req = {
+                    user_id : user_id
+                }
+                socket.emit("reauthenticate", user_req);
+            
             } else if (command == "create") {
                 socket.emit("createRoom", {room_name: text});
             } else if (command == "join") {

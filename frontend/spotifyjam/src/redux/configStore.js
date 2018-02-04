@@ -8,18 +8,9 @@ import thunk from 'redux-thunk';
 import { routerMiddleware } from 'react-router-redux';
 import logger from 'redux-logger';
 
-//Socket
-import socketIO from 'socket.io-client';
-import socketIoMiddleware from 'redux-socket.io-middleware'
-
 //Persist
 import { persistStore, persistReducer } from 'redux-persist'
 import storage from 'redux-persist/lib/storage'
-
-//Devkeys
-import {devURLs, productionURLs} from '../devKeys';
-const devMode = true;
-const {server_url} = devMode ? devURLs : productionURLs;
 
 //Create Config (only session persist)
 const persistConfig = {
@@ -27,9 +18,6 @@ const persistConfig = {
     storage,
     whitelist: ['session'],
 }
-
-//Socket Instance
-const io = socketIO.connect(server_url);
 
 //Persist Root Reducer
 const persistedReducer = persistReducer(persistConfig, rootReducer)
@@ -39,7 +27,6 @@ const middleware = [
     thunk,
     routerMiddleware(history),
     logger,
-    socketIoMiddleware(io)
 ];
 
 //Create Store and Persistor

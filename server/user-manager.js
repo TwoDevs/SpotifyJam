@@ -17,6 +17,10 @@ method.existsUser = function(user_id) {
     return (user_id in this.users);
 }
 
+method.getUser = function(user_id) {
+    return this.users[user_id];
+}
+
 method.existsUsername = function(username) {
     return Object.values(this.users).map(function(e) {return e.username;}).indexOf(username) >= 0;
 }
@@ -26,7 +30,7 @@ method.existsSpotifyID = function(spotify_id) {
 }
 
 method.getUsername = function(user_id) {
-    return this.users[user_id];
+    return this.users[user_id].username;
 }
 
 method.sendAvailableUsers = function(socket) {
