@@ -24,19 +24,14 @@ import {
 //Socket
 import socketIO from 'socket.io-client';
 
-//Devkeys
-import {devURLs, productionURLs} from '../../devKeys';
-const devMode = true;
-const {server_url} = devMode ? devURLs : productionURLs;
-
 //Socket Instance
-const io = socketIO.connect(server_url);
+const io = socketIO.connect(process.env.REACT_APP_SERVER_URL);
 
 class Lobby extends Component {
     constructor(props){
         super(props);
 
-        const username = props.user_req.display_name;
+        const username = props.user_req.username;
 
         this.state = {
             rooms: [],
@@ -79,7 +74,6 @@ class Lobby extends Component {
         });
         //Retrieve msgs
         io.on('msg', (res) => {
-            debugger;
             const currState = this.state;
             currState.messages.push(res.username + ": " + res.message_text);
             this.setState(currState);
@@ -115,19 +109,22 @@ class Lobby extends Component {
     submitNewMessage = () => {
         const {newMessage, username} = this.state;
 
+        // Add new message to stack
         const currState = this.state;
         currState.messages.push(username + ": " + newMessage);
-
         this.setState(currState);
-        io.emit('msg', {mesage_text: newMessage});
+
+        // Emit new message to others
+        io.emit('msg', {message_text: newMessage});
         
+        // Reset field
         this.setState({
             newMessage: ""
         });
     }
 
     render() {
-        const {rooms, currRoom, messages} = this.state;
+        const {rooms, currRoom, messages, newMessage} = this.state;
         const roomList = rooms.map((roomName) => {
             <div>
                 <p id="roomName"> {roomName} </p>
@@ -143,7 +140,7 @@ class Lobby extends Component {
               <div>Current Room: {currRoom}</div>
               <br/>
               <br/>
-              <Input onChange={this.handleRoomNameInput}/>
+              <Input onChange={() => this.handleRoomNameInput}/>
               <Button onClick={this.submitNewRoom}>Create Room</Button>
               <Button onClick={this.joinRooms}>Join Room</Button>
               <br/>
@@ -155,8 +152,8 @@ class Lobby extends Component {
                 dataSource={messages}
                 renderItem={item => (<List.Item>{item}</List.Item>)}
                 />
-                <Input onChange={this.handleMessageInput}/>
-                <Button onClick={this.submitNewMessage}>Send Message</Button>
+                <Input placeHolder="Type a message..." onChange={this.handleMessageInput} value = {newMessage}/>
+                <Button onClick={() => this.submitNewMessage()}>Send Message</Button>
               <br/>
               <br/>
             </div>
