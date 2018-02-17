@@ -4,12 +4,20 @@ import React from 'react';
 //Components
 import {Card, Button} from 'antd';
 
+//Icons
+import SpotifyIcon from 'react-icons/lib/fa/spotify';
+
+const buttonStyle = {
+    background: '#1DB954',
+    borderColor: '#1DB954'
+}
+
 const SplashCard = (props) => {
     return(
-        <Card title="Spotify Jam!" style={{ width: 300, position: "absolute", top: "40%", left: "42%", textAlign: "center" }}>
-            <p>Come jam out to songs together!</p>
-            <Button type="primary" href={process.env.REACT_APP_SERVER_URL + "/login"} size='large'>Verify Spotify</Button>
-            <p>PORT: {process.env.REACT_APP_SERVER_PORT}</p>
+        <Card title="Spotify Jam" style={{ width: 300, position: "absolute", top: "40%", left: "42%", textAlign: "center" }}>
+            <Button type="primary" style = {buttonStyle} href={process.env.REACT_APP_SERVER_URL + "/login"} size='large'>
+                <SpotifyIcon/> Login with Spotify
+            </Button>
         </Card>
     );
 }

@@ -5,6 +5,7 @@ import {bindActionCreators} from 'redux';
 
 //Components
 import {Button, Input, List} from 'antd';
+import Header from '../header/Header';
 
 //Actions
 import {
@@ -85,6 +86,7 @@ class Lobby extends Component {
     submitNewRoom = () => {
         const {newRoom} = this.state;
         io.emit('createRoom', {room_name: newRoom});
+        // Reset Field
         this.setState({
             newRoom: ""
         });
@@ -124,7 +126,7 @@ class Lobby extends Component {
     }
 
     render() {
-        const {rooms, currRoom, messages, newMessage} = this.state;
+        const {rooms, currRoom, messages, newMessage, newRoom} = this.state;
         const roomList = rooms.map((roomName) => {
             <div>
                 <p id="roomName"> {roomName} </p>
@@ -132,6 +134,7 @@ class Lobby extends Component {
         });
         return(
             <div>
+            <Header/>
               <h1>Lobby</h1>
               <hr/>
               <br/>
@@ -140,7 +143,7 @@ class Lobby extends Component {
               <div>Current Room: {currRoom}</div>
               <br/>
               <br/>
-              <Input onChange={() => this.handleRoomNameInput}/>
+              <Input onChange={this.handleRoomNameInput} value = {newRoom}/>
               <Button onClick={this.submitNewRoom}>Create Room</Button>
               <Button onClick={this.joinRooms}>Join Room</Button>
               <br/>
@@ -152,7 +155,7 @@ class Lobby extends Component {
                 dataSource={messages}
                 renderItem={item => (<List.Item>{item}</List.Item>)}
                 />
-                <Input placeHolder="Type a message..." onChange={this.handleMessageInput} value = {newMessage}/>
+                <Input placeholder="Type a message..." onChange={this.handleMessageInput} value = {newMessage}/>
                 <Button onClick={() => this.submitNewMessage()}>Send Message</Button>
               <br/>
               <br/>

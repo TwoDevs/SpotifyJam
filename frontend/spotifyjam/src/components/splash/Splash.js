@@ -2,19 +2,23 @@
 import React, {Component} from 'react';
 
 //Components 
-import Particles from 'react-particles-js';
 import SplashCard from './SplashCard';
 
-//Particle Config
-import {particles} from './particlesjs-config';
+//Video
+import Cover from 'react-video-cover';
 
 class Splash extends Component {
     render() {
-        const {verified} = this.props;
+        const videoOptions = {
+            src: 'https://d3fka592uu6tyf.cloudfront.net/converted_videos/s3_0dc7d315-a2e9-44a4-9b85-bd519b8c362a/desktop.mp4',
+            autoPlay: true,
+            loop: true,
+            muted: true
+          };
+
         return (
             <div>
-            <h3 style={{ color: "white", position: "absolute", top: "80%", left: "75%" }} >Access Token Exists: {verified}</h3>
-            <Particles params={{particles}} style ={{backgroundColor: "black"}}/>
+                <Cover id = "videoCover" videoOptions={videoOptions} remeasureOnWindowResize />
                 <SplashCard/>
             </div>
         );
