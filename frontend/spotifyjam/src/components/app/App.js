@@ -7,6 +7,7 @@ import Splash from "../splash/Splash";
 import Lobby from '../lobby/Lobby';
 import Todo from '../todo/Todo';
 import Verification from '../verification/Verification';
+import Room from '../room/Room';
 
 class App extends Component {
   render () {
@@ -17,6 +18,7 @@ class App extends Component {
           <Route exact path="/verification" component = {Verification}/>
           <Route exact path="/lobby" component = {Lobby}/>
           <Route exact path="/todo" component = {Todo}/>
+          <Route exact path="/room/:roomname" component = {Room}/>
         </main>
       </div>
     );

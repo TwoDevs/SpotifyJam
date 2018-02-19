@@ -2,10 +2,12 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
+import {Link} from 'react-router-dom';
 
 //Components
-import {Button, Input, List} from 'antd';
+import {Button, Input, List, Row, Col} from 'antd';
 import Header from '../header/Header';
+import RoomCard from './RoomCard';
 
 //Actions
 import {
@@ -127,38 +129,46 @@ class Lobby extends Component {
 
     render() {
         const {rooms, currRoom, messages, newMessage, newRoom} = this.state;
-        const roomList = rooms.map((roomName) => {
-            <div>
-                <p id="roomName"> {roomName} </p>
-            </div>
-        });
+        const roomList = rooms.map((roomName) => 
+            <Col span={6}>
+                <Link to={"/room/"+roomName}> 
+                    <RoomCard roomName={roomName}/>
+                </Link>
+            </Col>
+        );
         return(
             <div>
             <Header/>
-              <h1>Lobby</h1>
-              <hr/>
-              <br/>
-              <div>Rooms: </div>
-              {rooms}
-              <div>Current Room: {currRoom}</div>
-              <br/>
-              <br/>
-              <Input onChange={this.handleRoomNameInput} value = {newRoom}/>
-              <Button onClick={this.submitNewRoom}>Create Room</Button>
-              <Button onClick={this.joinRooms}>Join Room</Button>
-              <br/>
-              <br/>
-              <h1>Chat</h1>
-              <hr/>
-              <List
-                size="small"
-                dataSource={messages}
-                renderItem={item => (<List.Item>{item}</List.Item>)}
-                />
-                <Input placeholder="Type a message..." onChange={this.handleMessageInput} value = {newMessage}/>
-                <Button onClick={() => this.submitNewMessage()}>Send Message</Button>
-              <br/>
-              <br/>
+            <Row type="flex" justify="space-around" gutter={32}>
+                <Col offset={1} span={14}>
+                    <Button type="primary" icon="play-circle-o" size="large">Create new room</Button>
+                    <br/>
+                    <Row type="flex" justify="space-around" gutter={32}>
+                    {roomList}
+                    </Row>
+                    <div>Current Room: {currRoom}</div>
+                    <br/>
+                    <br/>
+                    <Input onChange={this.handleRoomNameInput} value = {newRoom}/>
+                    <Button onClick={this.submitNewRoom}>Create Room</Button>
+                    <Button onClick={this.joinRooms}>Join Room</Button>
+                    <br/>
+                    <br/>
+                </Col>
+                <Col span={6}>
+                    <h1>Chat</h1>
+                    <hr/>
+                    <List
+                    size="small"
+                    dataSource={messages}
+                    renderItem={item => (<List.Item>{item}</List.Item>)}
+                    />
+                    <Input placeholder="Type a message..." onChange={this.handleMessageInput} value = {newMessage}/>
+                    <Button onClick={() => this.submitNewMessage()}>Send Message</Button>
+                    <br/>
+                    <br/>
+                </Col>
+            </Row>
             </div>
         );
     }

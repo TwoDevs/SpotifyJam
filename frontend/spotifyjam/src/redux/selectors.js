@@ -73,3 +73,10 @@ export const selectUser = createSelector(
         return user;
     }
 )
+
+export const selectSocketStatus = createSelector(
+    [getLoadingStatus],
+    status => {
+        return status.socketStatus;
+    }
+)

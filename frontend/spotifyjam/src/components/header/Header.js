@@ -1,45 +1,50 @@
 // React, Redux
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
+import {Link} from 'react-router-dom';
 
 // Selector
 import {selectUser} from '../../redux/selectors';
-import { Button, Menu, Avatar, Icon, Row, Col } from 'antd';
+
+// Action
+import {logOut} from '../../redux/session/sessionActions';
+
+//Components
+import { Menu, Avatar, Icon, Row, Col } from 'antd';
 import SpotifyIcon from 'react-icons/lib/fa/spotify';
 const SubMenu = Menu.SubMenu;
 
 class Header extends Component {
-    state = {
-        current: 'home'
-    }
-
-    handleClick = (e) => {
-        this.setState({
-          current: e.key,
-        });
+ 
+    handleLogOut = ({key}) => {
+        if (key === 'logout'){
+            this.props.logOut();
+        }
     }
 
     render(){
-        const { current } = this.state;
         const { user } = this.props;
         return(
                 <Row>
                     <Col span={3}>
                         <Menu mode="horizontal">     
                             <Menu.Item>
-                                <SpotifyIcon/> Spotify Jam
+                                <Link to="/lobby"> 
+                                    <SpotifyIcon/> Spotify Jam
+                                </Link>
                             </Menu.Item>
                         </Menu>
                     </Col>
                     <Col span={3} offset={18}>
-                        <Menu mode="horizontal">
+                        <Menu mode="horizontal" onClick={this.handleLogOut}>
                             <SubMenu title={
                                 <span>
                                     <Avatar src={user.images[0].url}/>
                                     {user.display_name}
                                 </span>}>
-                                <Menu.Item>
-                                <Icon type="logout" /> Log Out
+                                <Menu.Item key='logout'>
+                                    <Icon type="logout" /> Log Out
                                 </Menu.Item>
                             </SubMenu>
                         </Menu>
@@ -55,4 +60,8 @@ const mapStateToProps = (state) => {
     };
 }
 
-export default connect(mapStateToProps, null)(Header);
+const mapDispatchToProps = dispatch => bindActionCreators({
+    logOut
+}, dispatch);
+
+export default connect(mapStateToProps, mapDispatchToProps)(Header);

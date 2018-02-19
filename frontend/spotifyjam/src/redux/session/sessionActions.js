@@ -131,3 +131,13 @@ export const clearSession = () => {
     }
 }
 
+export const logOut = () => {
+    return dispatch => {
+        //Dispatch Router Log Out
+        dispatch(clearSession())
+        dispatch(redirectToHome());
+        dispatch({
+            type: 'LOG_OUT'
+        });
+    }
+}
