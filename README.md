@@ -17,7 +17,7 @@ cd frontend/spotifyjam/
 Run Local Site
 ---
 1. yarn (install)
-3. yarn start (run)
+3. yarn dev (run)
 
 Deploy Build
 ---
