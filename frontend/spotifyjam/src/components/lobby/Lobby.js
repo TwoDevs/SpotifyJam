@@ -2,9 +2,12 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
+import {Link} from 'react-router-dom';
 
 //Components
-import {Button, Input, List} from 'antd';
+import {Button, Input, List, Row, Col} from 'antd';
+import Header from '../header/Header';
+import RoomCard from './RoomCard';
 
 //Actions
 import {
@@ -24,24 +27,22 @@ import {
 //Socket
 import socketIO from 'socket.io-client';
 
-//Devkeys
-import {devURLs, productionURLs} from '../../devKeys';
-const devMode = true;
-const {server_url} = devMode ? devURLs : productionURLs;
-
 //Socket Instance
-const io = socketIO.connect(server_url);
+const io = socketIO.connect(process.env.REACT_APP_SERVER_URL);
 
 class Lobby extends Component {
     constructor(props){
         super(props);
+
+        const username = props.user_req.username;
 
         this.state = {
             rooms: [],
             currentRoom: "",
             newRoom: "",
             messages: [],
-            newMessage: ""
+            newMessage: "",
+            username
         };
 
         //Socket Event Listeners
@@ -76,7 +77,6 @@ class Lobby extends Component {
         });
         //Retrieve msgs
         io.on('msg', (res) => {
-            debugger;
             const currState = this.state;
             currState.messages.push(res.username + ": " + res.message_text);
             this.setState(currState);
@@ -84,80 +84,91 @@ class Lobby extends Component {
 
     }
 
+    //Room Handling
     submitNewRoom = () => {
         const {newRoom} = this.state;
         io.emit('createRoom', {room_name: newRoom});
+        // Reset Field
         this.setState({
             newRoom: ""
         });
     }
-
-
-    submitNewMessage = () => {
-        const {newMessage} = this.state;
-
-        const currState = this.state;
-        currState.messages.push(newMessage);
-
-        this.setState(currState);
-        io.emit('msg', {mesage_text: newMessage});
-        
-        this.setState({
-            newMessage: ""
-        });
-    }
-
-
     joinRooms = () => {
         const {newRoom} = this.state;
         io.emit('joinRoom', {room_name: newRoom});
     }
-
     handleRoomNameInput = (e) => {
         this.setState({
             newRoom: e.target.value
         });
     }
 
+
+    //Messaging
     handleMessageInput = (e) => {
         this.setState({
             newMessage: e.target.value
         });
     }
+    submitNewMessage = () => {
+        const {newMessage, username} = this.state;
+
+        // Add new message to stack
+        const currState = this.state;
+        currState.messages.push(username + ": " + newMessage);
+        this.setState(currState);
+
+        // Emit new message to others
+        io.emit('msg', {message_text: newMessage});
+        
+        // Reset field
+        this.setState({
+            newMessage: ""
+        });
+    }
 
     render() {
-        const {rooms, currRoom, messages} = this.state;
-        const roomList = rooms.map((roomName) => {
-            <div>
-                <p id="roomName"> {roomName} </p>
-            </div>
-        });
+        const {rooms, currRoom, messages, newMessage, newRoom} = this.state;
+        const roomList = rooms.map((roomName) => 
+            <Col span={6}>
+                <Link to={"/room/"+roomName}> 
+                    <RoomCard roomName={roomName}/>
+                </Link>
+            </Col>
+        );
         return(
             <div>
-              <h1>Lobby</h1>
-              <hr/>
-              <br/>
-              <div>Rooms: </div>
-              {rooms}
-              <div>Current Room: {currRoom}</div>
-              <br/>
-              <br/>
-              <Input onChange={this.handleRoomNameInput}/>
-              <Button onClick={this.submitNewRoom}>Create Room</Button>
-              <Button onClick={this.joinRooms}>Join Room</Button>
-              <br/>
-              <br/>
-              <h1>Chat</h1>
-              <hr/>
-              <List
-                size="small"
-                dataSource={messages}
-                renderItem={item => (<List.Item>{item}</List.Item>)}
-                />
-                <Input onChange={this.handleMessageInput}/>
-                <Button onClick={this.submitNewMessage}>Send Message</Button>
-              <br/>
-              <br/>
+            <Header/>
+            <Row type="flex" justify="space-around" gutter={32}>
+                <Col offset={1} span={14}>
+                    <Button type="primary" icon="play-circle-o" size="large">Create new room</Button>
+                    <br/>
+                    <Row type="flex" justify="space-around" gutter={32}>
+                    {roomList}
+                    </Row>
+                    <div>Current Room: {currRoom}</div>
+                    <br/>
+                    <br/>
+                    <Input onChange={this.handleRoomNameInput} value = {newRoom}/>
+                    <Button onClick={this.submitNewRoom}>Create Room</Button>
+                    <Button onClick={this.joinRooms}>Join Room</Button>
+                    <br/>
+                    <br/>
+                </Col>
+                <Col span={6}>
+                    <h1>Chat</h1>
+                    <hr/>
+                    <List
+                    size="small"
+                    dataSource={messages}
+                    renderItem={item => (<List.Item>{item}</List.Item>)}
+                    />
+                    <Input placeholder="Type a message..." onChange={this.handleMessageInput} value = {newMessage}/>
+                    <Button onClick={() => this.submitNewMessage()}>Send Message</Button>
+                    <br/>
+                    <br/>
+                </Col>
+            </Row>
             </div>
         );
     }

@@ -1,131 +1,156 @@
 //React | Redux | Router
 import React, {Component} from 'react';
+import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
 
-//Socket Libraries
-import socketIOClient from "socket.io-client";
-import {get_sync_dict_from_json} from '../../spotify/playerUtil';
+//Components
+import {Button, Input, List, Row, Col} from 'antd';
+import Header from '../header/Header';
 
-//Keys & Mode
-import {devURLs, productionURLs} from '../../devKeys';
-const devMode = true;
-const {server_url} = devMode ? devURLs : productionURLs;
+//Actions
+import {
+    socketConnected,
+    requestSocketAuth,
+    handleAuthResult,
+    requestSocketReAuth,
+    handleReAuthResult
+} from '../../redux/socket/socketActions';
 
-//Spotify Libraries
-const queryString = require('query-string');
-var SpotifyWebAPI = require("spotify-web-api-js");
-var spotifyAPI = new SpotifyWebAPI();
+//Selectors
+import {
+    selectUserReq,
+    selectSocketAuth,
+    selectCurrentPage,
+    selectSocketStatus
+} from '../../redux/selectors';
 
+//Socket
+import socketIO from 'socket.io-client';
 
+//Socket Instance
+const io = socketIO.connect(process.env.REACT_APP_SERVER_URL);
 
 class Room extends Component {
     constructor(props){
         super(props);
+
+        const username = props.user_req.username;
+        const roomname = props.match.params.roomname;
+        const socketConnected = props.socketStatus;
+        
         this.state = {
-          connected: false,
-          endpoint: server_url,
-          isAdmin: false,
+            messages: [],
+            newMessage: "",
+            username,
+            roomname
         };
-      } 
 
-      sync_local_player = (sync_data) => {
-        spotifyAPI.getMyCurrentPlayingTrack( function(err, my_data) {
-          if (err) {
-            console.error(err)
-          } else {
-            let dict = get_sync_dict_from_json(my_data, sync_data);
-            if (dict) {
-              if (dict.uri) {
-                let options = {uris:[dict.uri],offset:{position:0} };
-                console.log(options);
-                spotifyAPI.play(options, function(err, data) {console.log(data)});
-              }
-              if (dict.progress) {
-                spotifyAPI.seek(dict.progress, function(err, data) {});
-              }
-              if (dict.is_playing !== null) {
-                if (!dict.is_playing) {
-                  spotifyAPI.pause( function(err, data) {});
-                } 
-              }
-            }
-          };
-        });
-      }
-    
-      //Lifecycle Functions
-      componentDidMount(){
-        const {endpoint, isAdmin} = this.state;
-        const socket = socketIOClient(endpoint);
-        const timeInterval = 5000;
+        //Socket Event Listeners
+        io.on('connect', props.socketConnected);
+        
+        //Check for existing auth
+        if (props.socketAuth){
+            //Get ReAuth from socket
+            props.requestSocketReAuth(io);
 
-        socket.on("connect", () => {
-          console.log("Connected");
-          this.setState({
-            connected: true
-          });
-        });
-    
-        socket.on("config", (data) =>{
-          this.setState({
-            isAdmin: data.isAdmin
-          });
-        });
+            //On reauthenticate
+            io.on('reauthenticate', (res) => {
+                props.handleReAuthResult(res);
+                if (res.status === 'succeeded'){
+                    const roomname = props.match.params.roomname;
+                    io.emit('joinRoom', {room_name: roomname});
+                }
+            });
+        }
+        else {
+            //Get Auth from socket
+            props.requestSocketAuth(io);
 
-        socket.on("sync", (sync_data) =>{
-          console.log("Received Sync!");
-          this.sync_local_player(sync_data);
+            //On authenticate
+            io.on('authenticate', (res) => {
+                props.handleAuthResult(res);
+                if (res.status === 'succeeded'){
+                    const roomname = props.match.params.roomname;
+                    io.emit('joinRoom', {room_name: roomname});
+                }
+            });
+        }
+        //Retrieve msgs
+        io.on('msg', (res) => {
+            const currState = this.state;
+            currState.messages.push(res.username + ": " + res.message_text);
+            this.setState(currState);
         });
         
-        const pollingInterval = setInterval(() => {
-          if(isAdmin){
-              this.sendSync(socket);
-          }
-        },timeInterval);
-        this.setState({
-          pollingInterval
-        });
-    
-      }
-    
-      componentWillUnmount(){
-        const {pollingInterval} = this.state;
-        clearInterval(pollingInterval);
-      }
-    
-    
-      //Modularized Methods
-      register = () => {
-        const {accessToken} = this.state;
-        if (accessToken){
-            spotifyAPI.setAccessToken(accessToken);
-        }
-      }
+    }
 
-      sendSync = (socket) => {
-        spotifyAPI.getMyCurrentPlayingTrack( function(err, data) {
-          if (err) console.error(err);
-          else {
-              data.timestamp = Date.now();
-              socket.emit('sync',data);
-          }
+
+
+    //Messaging
+    handleMessageInput = (e) => {
+        this.setState({
+            newMessage: e.target.value
         });
-      }
+    }
+    submitNewMessage = () => {
+        const {newMessage, username} = this.state;
+
+        // Add new message to stack
+        const currState = this.state;
+        currState.messages.push(username + ": " + newMessage);
+        this.setState(currState);
+
+        // Emit new message to others
+        io.emit('msg', {message_text: newMessage});
+        
+        // Reset field
+        this.setState({
+            newMessage: ""
+        });
+    }
 
     render() {
-        const {connected, endpoint, isAdmin} = this.state;
+        const {messages, newMessage, roomname} = this.state;
+
         return(
             <div>
-                <h1> Home Page</h1>
-                <hr/>
-                  <p>Admin: {isAdmin.toString()}</p>
-                  <p>Connection Status: {connected.toString()}</p>
-                  <p>Server URL: {endpoint}</p>
-                <br/>
-                <br/>
+            <Header/>
+            <Row type="flex" justify="space-around" gutter={32}>
+                <Col offset={1} span={14}>
+                    {roomname}
+                </Col>
+                <Col span={6}>
+                    <h1>Chat</h1>
+                    <hr/>
+                    <List
+                      size="small"
+                      dataSource={messages}
+                      renderItem={item => (<List.Item>{item}</List.Item>)}
+                    />
+                    <Input placeholder="Type a message..." onChange={this.handleMessageInput} value = {newMessage}/>
+                    <Button onClick={() => this.submitNewMessage()}>Send Message</Button>
+                </Col>
+            </Row>
             </div>
         );
     }
 }
 
+const mapStateToProps = (state) => {
+    return {
+        user_req: selectUserReq(state),
+        socketAuth: selectSocketAuth(state),
+        currRoom: selectCurrentPage(state),
+        socketStatus: selectSocketStatus(state)
+    };
+}
 
-export default Room;
+const mapDispatchToProps = dispatch => bindActionCreators({
+    socketConnected,
+    requestSocketAuth,
+    handleAuthResult,
+    requestSocketReAuth,
+    handleReAuthResult
+}, dispatch);
+
+export default connect(mapStateToProps, mapDispatchToProps)(Room);

@@ -66,3 +66,17 @@ export const selectSocketUser = createSelector(
         return user;
     }
 )
+
+export const selectUser = createSelector(
+    [getSessionUser],
+    user => {
+        return user;
+    }
+)
+
+export const selectSocketStatus = createSelector(
+    [getLoadingStatus],
+    status => {
+        return status.socketStatus;
+    }
+)
