@@ -101,46 +101,47 @@ app.get('/callback', function(req, res) {
     } else {
         res.clearCookie(stateKey);
         var authOptions = {
-        url: 'https://accounts.spotify.com/api/token',
-        form: {
-            code: code,
-            redirect_uri: redirect_uri,
-            grant_type: 'authorization_code'
-        },
-        headers: {
-            'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))
-        },
-        json: true
+            url: 'https://accounts.spotify.com/api/token',
+            form: {
+                code: code,
+                redirect_uri: redirect_uri,
+                grant_type: 'authorization_code'
+            },
+            headers: {
+                'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))
+            },
+            json: true
         };
-
+        console.log("AUTH_OPTIONS", authOptions);
         request.post(authOptions, function(error, response, body) {
-        if (!error && response.statusCode === 200) {
+            if (!error && response.statusCode === 200) {
 
-            var {access_token, refresh_token, expires_in, scope} = body;
+                var {access_token, refresh_token, expires_in, scope} = body;
 
-            var options = {
-                url: 'https://api.spotify.com/v1/me',
-                headers: { 'Authorization': 'Bearer ' + access_token },
-                json: true
-            };
+                var options = {
+                    url: 'https://api.spotify.com/v1/me',
+                    headers: { 'Authorization': 'Bearer ' + access_token },
+                    json: true
+                };
 
-            // use the access token to access the Spotify Web API
-            request.get(options, function(error, response, body) {});
+                // use the access token to access the Spotify Web API
+                request.get(options, function(error, response, body) {});
 
-            // we can also pass the token to the browser to make requests from there
-            res.redirect(frontend_url + '#' +
-            querystring.stringify({
-                access_token,
-                refresh_token,
-                expires_in
-            }));
-        } else {
-            //TODO: ADD ERROR PAGE & URL
-            res.redirect(error_url + '#' +
-            querystring.stringify({
-                error: 'invalid_token'
-            }));
-        }
+                // we can also pass the token to the browser to make requests from there
+                res.redirect(frontend_url + '#' +
+                querystring.stringify({
+                    access_token,
+                    refresh_token,
+                    expires_in
+                }));
+            } else {
+                //TODO: ADD ERROR PAGE & URL
+                console.log("ERROR: ", error, "BODY: ", body);
+                res.redirect(error_url + '#' +
+                querystring.stringify({
+                    error: 'invalid_token'
+                }));
+            }
         });
     }
 });
@@ -210,42 +211,69 @@ var createSocketSession = function(socket, user_req) {
     var {spotify_id, username, is_guest} = user_req;
     var user = um.addUser(socket, username, is_guest, spotify_id);
     if (user == null) {
-        socket.emit("authenticate", {status: "failed", req: user_req});
+        socket.emit('action', {type:'authenticate', payload: {status: "failed", req: user_req}});
     } else {
         console.log("\n\n~ Session Created - Member " +  user.username + " | Connected to socket: " + socket.id + " ~");
         rm.joinRoom(socket, default_room, function(){});
         bindUser(socket, user);
-        socket.emit("authenticate", {status: "succeeded", req: user_req, user: user});
+        socket.emit('action', {type: 'authenticate', payload: {status: "succeeded", req: user_req, user: user}});
         rm.sendAvailableRooms(socket);
     }
 }
 
-var recreateSocketSession = function(socket, req_user) {
-    if (req_user == null) {
-        socket.emit("reauthenticate", {status: "failed", req: req_user});
+var recreateSocketSession = function(socket, user_req) {
+    if (user_req == null) {
+        socket.emit('action', {type:'reauthenticate', payload: {status: "failed", req: user_req}});
     } else {
-
-        if (um.existsUser(req_user.user_id)) {
-            var user = um.getUser(req_user.user_id);
+        console.log("Not null\n")
+        if (um.existsUser(user_req.user_id)) {
+            var user = um.getUser(user_req.user_id);
+            console.log("user exists\n")
             console.log("\n\n~ Session Rejoined - Member " +  user.username + " | Connected to socket: " + socket.id + " ~");
             rm.joinRoom(socket, default_room, function(){});
             bindUser(socket, user);
-            socket.emit("reauthenticate", {status: "succeeded", req: user, user: user});
+            socket.emit('action', {type:'reauthenticate', payload: {status: "succeeded", req: user_req, user: user}});
             rm.sendAvailableRooms(socket);
         }
     }
 }
 
 io.on('connection', function(socket){
+
+    // Send feedback connected!
+    socket.emit('action', {
+        type: 'CONNECTED'
+    });
+
+    socket.on('action', action => {
+        switch(action.type){
+            case "server/test":
+                console.log("Test socket middleware action recieved!");
+                socket.emit('action', {
+                    type:'middleware test', 
+                    payload:'good day!'
+                });
+                break;
+            case "server/SOCKET_AUTH_LOADING":
+                console.log("REG: ",action.payload)
+                createSocketSession(socket, action.payload);
+                break;
+            case "server/SOCKET_REAUTH_LOADING":
+                console.log("RE: ", action.payload)
+                recreateSocketSession(socket, action.payload);
+                break;
+            default:
+                console.log("Test socket middleware action recieved but type was incorrect");
+                socket.emit('action', {
+                    type:'message', 
+                    payload:'kind of good day!'
+                });
+        }
+    })
+
     socket.on('disconnect', function(){
-        console.log("\n\n~ Unauthed socket " + socket.id + " is Disconnecting. ~");
-    });
-
-    socket.on('authenticate', function(user_req){
-        createSocketSession(socket, user_req);
-    });
-
-    socket.on('reauthenticate', function(user){
-        recreateSocketSession(socket, user);
+        socket.emit('action',{
+            type: 'DISCONNECTED'
+        });
     });
 });
