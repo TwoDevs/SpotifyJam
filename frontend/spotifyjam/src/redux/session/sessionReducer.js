@@ -8,19 +8,6 @@ import {
     GET_PROFILE_SUCCESS,
     GET_PROFILE_FAIL,
 
-    SOCKET_AUTH_LOADING,
-    SOCKET_AUTH_SUCCESS,
-    SOCKET_AUTH_FAIL,
-
-    SOCKET_REAUTH_LOADING,
-    SOCKET_REAUTH_SUCCESS,
-    SOCKET_REAUTH_FAIL,
-
-    CONNECTED,
-
-    AUTH_SUCCESS,
-    AUTH_FAIL,
-
     CLEAR_SESSION,
 } from './sessionConstants';
 
@@ -30,11 +17,11 @@ const initialSessionState = {
     refresh_token: "",
     expires_in: "",
     isGuest: true,
+    loggedIn: false,
+    // "wait" -> "progress" -> "finished" || "fail"
     status: {
         tokenStatus: "wait",
         profileStatus: "wait",
-        socketStatus: "wait",
-        auth: false,
     },
     user: {
         country: null,
@@ -48,9 +35,7 @@ const initialSessionState = {
         product: null,
         type: null,
         uri: null,
-    },
-    res: null,
-    connected: false
+    }
 }
 
 //Session Reducer
@@ -62,7 +47,7 @@ export default (state = initialSessionState, action) => {
             });
         case GET_TOKENS_SUCCESS:
             return Object.assign({}, state, 
-                {status: Object.assign({}, state.status, {tokenStatus: "finish"})}, 
+                {status: Object.assign({}, state.status, {tokenStatus: "finished"})}, 
                 {access_token: action.payload, isGuest: false});
         case GET_TOKENS_FAIL:
             return Object.assign({}, state, {
@@ -74,36 +59,11 @@ export default (state = initialSessionState, action) => {
             });
         case GET_PROFILE_SUCCESS:
             return Object.assign({}, state, 
-                {status: Object.assign({}, state.status, {profileStatus: "finish"})}, 
+                {status: Object.assign({}, state.status, {profileStatus: "finished"})}, 
                 {user: action.payload});
         case GET_PROFILE_FAIL:
             return Object.assign({}, state, {
                 status: Object.assign({}, state.status, {profileState: "fail"})
-            });
-        case SOCKET_REAUTH_LOADING:
-        case SOCKET_AUTH_LOADING:
-            return Object.assign({}, state, {
-                status: Object.assign({}, state.status, {socketStatus: "process"})
-            });
-        case SOCKET_REAUTH_SUCCESS:
-        case SOCKET_AUTH_SUCCESS:
-            return Object.assign({}, state, 
-                {status: Object.assign({}, state.status, {socketStatus: "finish"})}, 
-                {res: action.payload});
-        case SOCKET_REAUTH_FAIL:
-        case SOCKET_AUTH_FAIL:
-            return Object.assign({}, state, {
-                status: Object.assign({}, state.status, {socketStatus: "fail"})
-            });
-        case CONNECTED:
-            return Object.assign({}, state, {connected: true});
-        case AUTH_SUCCESS:
-            return Object.assign({}, state, {
-                status: Object.assign({}, state.status, {auth: true})
-            });
-        case AUTH_FAIL:
-            return Object.assign({}, state, {
-                status: Object.assign({}, state.status, {auth: false})
             });
         case CLEAR_SESSION:
             return {

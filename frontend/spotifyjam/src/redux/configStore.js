@@ -6,11 +6,16 @@ import rootReducer from './rootReducer';
 //Middleware
 import thunk from 'redux-thunk';
 import { routerMiddleware } from 'react-router-redux';
-import logger from 'redux-logger';
+import createSocketIoMiddleware from 'redux-socket.io';
 
 //Persist
 import { persistStore, persistReducer } from 'redux-persist'
 import storage from 'redux-persist/lib/storage'
+
+//Socket Configuration
+import io from 'socket.io-client';
+let socket = io(process.env.REACT_APP_SERVER_URL);
+let socketIOMiddleware = createSocketIoMiddleware(socket, "server/");
 
 //Create Config (only session persist)
 const persistConfig = {
@@ -26,7 +31,7 @@ const persistedReducer = persistReducer(persistConfig, rootReducer)
 const middleware = [
     thunk,
     routerMiddleware(history),
-    logger,
+    socketIOMiddleware
 ];
 
 //Create Store and Persistor

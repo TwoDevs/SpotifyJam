@@ -8,12 +8,10 @@ const RoomCard = (props) => {
         <Card
             hoverable
             style={{ width: 240 }}
-            cover={<img alt="example" src="https://os.alipayobjects.com/rmsportal/QBnOOoLaAfKPirc.png" />}
-        >
+            cover={<img alt="example" src="https://os.alipayobjects.com/rmsportal/QBnOOoLaAfKPirc.png" />}>
             <Meta
                 title={roomName}
-                description="www.instagram.com"
-                />
+                description="www.instagram.com"/>
         </Card>
     )
 }

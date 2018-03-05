@@ -2,13 +2,13 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
-import {withRouter} from 'react-router-dom';
+import {withRouter, Link} from 'react-router-dom';
 
 //Components
-import {Steps, Icon, Spin} from 'antd';
+import {Steps, Icon, Spin, Button, Row, Col} from 'antd';
 
 //Actions
-import {authorize} from '../../redux/session/sessionActions';
+import {connectionHandler} from '../../redux/session/sessionActions';
 
 //Selectors
 import {selectLoadingStatus} from '../../redux/selectors';
@@ -18,25 +18,54 @@ const Step = Steps.Step;
 class Verification extends Component {
 
     componentDidMount(){
-        this.props.authorize();
+        this.props.connectionHandler();
     }
 
     render() {
-        const {tokenStatus, profileStatus} = this.props.loadingStatus;
+        const {tokenStatus, profileStatus, authStatus} = this.props.loadingStatus;
+        const loadCompleted = tokenStatus === 'finished' && profileStatus === 'finished' && authStatus === 'finished';
         return (
             <div>
-                <div>
-                    <Spin size = "large" style = {{textAlign: 'center', width: '100%', left: '40%'}}/>
-                    <Steps>
-                        
-                        <Step status={tokenStatus} title="Retrieving Tokens" 
-                            icon={<Icon type= {tokenStatus === "process" ? "loading" : "key"} />} />
-                        
-                        <Step status={profileStatus} title="Loading Profile" 
-                            icon={<Icon type={profileStatus === "process" ? "loading" : "solution"} />} />
+                {
+                loadCompleted ? 
+                    <div style = {{textAlign: 'center', width: '100%', left: '40%', paddingTop: '10%'}}>
+                        <h1>Ready!</h1>
+                    </div>
+                        :
+                    <div style = {{textAlign: 'center', width: '100%', left: '40%', paddingTop: '10%'}}>
+                        <h2>Loading...</h2>
+                        <Spin size = "large"/> 
+                    </div>
                     
-                    </Steps>
-                </div>
+                }
+
+                <Row gutter={32} type="flex" justify="center" align="middle" style = {{paddingTop: '10%'}}>
+                    <Col span={16} >
+                        <Steps>              
+                            <Step status={tokenStatus} title="Authenicating Tokens" 
+                                icon={<Icon type= {tokenStatus === "process" ? "loading" : "key"} />} />
+                            
+                            <Step status={profileStatus} title="Loading Profile" 
+                                icon={<Icon type={profileStatus === "process" ? "loading" : "solution"} />} />
+                            
+                                <Step status={authStatus} title="Connecting Network" 
+                                icon={<Icon type={authStatus === "process" ? "loading" : "cloud-download"} />} />           
+                        </Steps>
+                    </Col>
+                </Row>
+
+                <Row gutter={32} type="flex" justify="center" align="middle" style = {{paddingTop: '10%'}}>
+                    <Col offset={14}>
+                        {
+                        loadCompleted && 
+                            <Link to="/lobby"> 
+                                <Button size="large" type="primary" >
+                                    Next<Icon type="arrow-right"/>
+                                </Button>
+                            </Link>
+                        }
+                    </Col>
+                </Row>
             </div>
         );
     }
@@ -44,7 +73,7 @@ class Verification extends Component {
 
 
 const mapDispatchToProps = dispatch => bindActionCreators({
-    authorize
+    connectionHandler
 }, dispatch);
 
 const mapStateToProps = (state) => {

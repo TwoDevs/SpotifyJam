@@ -8,13 +8,17 @@ import {
     GET_PROFILE_SUCCESS,
     GET_PROFILE_FAIL,
 
-    AUTH_SUCCESS,
-    AUTH_FAIL,
-
     CLEAR_SESSION,
+    LOG_OUT
 } from './sessionConstants';
 
-//Core API
+//Socket Actions
+import {
+    socketAuthenticate,
+    socketReauthenticate,
+} from '../socket/socketActions';
+
+//API 
 import {
     verifyTokens,
     setSpotifyTokens,
@@ -29,16 +33,14 @@ import {
 //Selectors
 import {
     selectURLHash,
-    selectAuthorizationStatus,
+    selectAccessToken,
 } from '../selectors';
 
 
 export const setTokens = () => {
     return (dispatch, getState) => {
         //Start Loading
-        dispatch({
-            type: GET_TOKENS_LOADING
-        });
+        dispatch({ type: GET_TOKENS_LOADING });
         //Retrieve hash from store
         const hash = selectURLHash(getState());
         //Check hash
@@ -54,13 +56,9 @@ export const setTokens = () => {
         }
         else {
             //Dispatch Fail
-            dispatch({
-                type: GET_TOKENS_FAIL
-            });
+            dispatch({ type: GET_TOKENS_FAIL });
             //Log Out
-            dispatch({
-                type: CLEAR_SESSION
-            });
+            dispatch(logOut());
         }
     }
 }
@@ -81,63 +79,51 @@ export const setProfile = () => {
             });
         })
         .catch(e => {
-            //Replace with logger middleware later
-            console.log("Profile Fail:", e);
             //Dispatch Fail
-            dispatch({
-                type: GET_PROFILE_FAIL
-            });
+            dispatch({ type: GET_PROFILE_FAIL });
             //Log Out
-            dispatch({
-                type: CLEAR_SESSION
-            });
+            dispatch(logOut());
         });
-
     }
 }
 
-export const authorize = () => {
+export const connectionHandler = () => {
+    return (dispatch, getState) => {
+        //TODO: More comprehensive selector/verify
+        const access_token = selectAccessToken(getState());
+        if (access_token !== "") {
+            dispatch(socketReauthenticate())
+        } else {
+            dispatch(authenticate());
+        }
+    }
+}
+
+export const authenticate = () => {
     return (dispatch, getState) => {
         //Set tokens (synchronous)
         dispatch(setTokens());
-        //Profile retrieval (update status async)
+        //Profile retrieval (asynchronous)
         dispatch(setProfile())
+        //TODO: SOCKET AUTH
         .then(() => {
-            if (selectAuthorizationStatus(getState())){
-                //Dispatch Router Change
-                dispatch(redirectToLobby());
-                //Dispatch Successful Auth
-                return dispatch({
-                    type: AUTH_SUCCESS
-                });
-            }
-            else{
-                //Dispatch Router Change
-                dispatch(redirectToHome());
-                //Dispatch Unsuccessful Auth
-                return dispatch({
-                    type: AUTH_FAIL
-                });
-            }
+            dispatch(socketAuthenticate())
         });
     }
 }
 
-export const clearSession = () => {
-    return dispatch => {
-        dispatch({
-            type: CLEAR_SESSION
-        });
-    }
-}
-
+//Leave Site
 export const logOut = () => {
     return dispatch => {
         //Dispatch Router Log Out
         dispatch(clearSession())
         dispatch(redirectToHome());
-        dispatch({
-            type: 'LOG_OUT'
-        });
+        dispatch({ type: LOG_OUT });
+    }
+}
+
+export const clearSession = () => {
+    return dispatch => {
+        dispatch({ type: CLEAR_SESSION });
     }
 }
