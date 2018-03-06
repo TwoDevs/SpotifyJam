@@ -19,7 +19,11 @@ method.isGlobalRoom = function(room_name) {
 }
 
 method.sendAvailableRooms = function(socket) {
-    socket.emit('availableRooms', {rooms: Object.keys(this.rooms), currentRoom: this.currentRoom(socket)});
+    console.log("sending rooms");
+    socket.emit('action', {
+        type: 'availableRooms', 
+        payload: {rooms: Object.keys(this.rooms), currentRoom: this.currentRoom(socket)}
+    });
 }
 
 method.broadcastAvailableRooms = function(io) {
@@ -84,9 +88,15 @@ method.joinRoom = function(socket, room_name, callback) {
             if (joinRoom.admins.length == 0) {
                 // Add admin
                 joinRoom.admins.push(socket.id);
-                socket.emit('config', {isAdmin: true });
+                socket.emit('action', {
+                    type: 'config', 
+                    payload: {isAdmin: true}
+                });
             } else {
-                socket.emit('config', {isAdmin: false });
+                socket.emit('action', {
+                    type: 'config', 
+                    payload: {isAdmin: false}
+                });
             }
             callback();
         });

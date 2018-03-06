@@ -16,9 +16,9 @@ import {selectLoadingStatus} from '../../redux/selectors';
 const Step = Steps.Step;
 
 class Verification extends Component {
-
-    componentDidMount(){
-        this.props.connectionHandler();
+    constructor(props){
+        super(props);
+        props.connectionHandler();
     }
 
     render() {

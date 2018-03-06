@@ -4,9 +4,7 @@ import {
     CONNECTED
 } from '../socket/socketConstants';
 
-import {clearSession} from '../session/sessionActions';
-
-import {redirectToHome} from '../API/historyFunctions';
+import {logOut} from '../session/sessionActions';
 
 import {
     selectUserReq,

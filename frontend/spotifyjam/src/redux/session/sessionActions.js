@@ -26,7 +26,6 @@ import {
 } from '../API/spotifyFunctions';
 
 import {
-    redirectToLobby,
     redirectToHome
 } from '../API/historyFunctions';
 

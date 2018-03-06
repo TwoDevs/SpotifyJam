@@ -6,6 +6,7 @@ const getAccessToken = (state) => state.session.access_token;
 const getSessionLoadingStatus = (state) => state.session.status;
 const getSocketLoadingStatus = (state) => state.spotify.status;
 const getSessionUser = (state) => state.session.user;
+const getRooms = (state) => state.spotify.availableRooms;
 
 //Memoized Selectors
 export const selectURLHash = createSelector(
@@ -42,5 +43,12 @@ export const selectUser = createSelector(
     [getSessionUser],
     user => {
         return user;
+    }
+)
+
+export const selectRooms = createSelector(
+    [getRooms],
+    rooms => {
+        return rooms;
     }
 )

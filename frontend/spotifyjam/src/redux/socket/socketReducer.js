@@ -18,7 +18,10 @@ const initialSocketState = {
         // "wait" -> "progress" -> "finished" || "fail",
         connected: true,
         authStatus: 'wait',
-    }
+    },
+    currentRoom: "",
+    availableRooms: {},
+    roomAdmin: false
 }
 
 //Session Reducer
@@ -40,7 +43,8 @@ export default (state = initialSocketState, action) => {
             return Object.assign({}, state, 
                 {status: Object.assign({}, state.status, {authStatus: 'progress'})}
             )
-
+        case 'CLEAR_SESSION':
+            return initialSocketState;
         //Handlers for Server Actions
         case 'authenticate':
             if (action.payload.status === "succeeded") {
@@ -66,6 +70,13 @@ export default (state = initialSocketState, action) => {
                     {status: Object.assign({}, state.status, {authStatus: 'finished'})},
                 );
             }
+        case 'availableRooms':
+            return Object.assign({}, state, 
+                {currentRoom: action.payload.currentRoom},
+                {availableRooms: action.payload.rooms}
+            );
+        case 'config':
+            return Object.assign({}, state, {roomAdmin: action.payload.isAdmin});
         default:
             return state;
     }

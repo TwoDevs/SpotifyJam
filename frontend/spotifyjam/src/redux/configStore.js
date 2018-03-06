@@ -21,7 +21,7 @@ let socketIOMiddleware = createSocketIoMiddleware(socket, "server/");
 const persistConfig = {
     key: 'root',
     storage,
-    whitelist: ['session'],
+    whitelist: ['session', 'spotify'],
 }
 
 //Persist Root Reducer

@@ -2,21 +2,25 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
-import {Link} from 'react-router-dom';
 
 //Components
-import {Button, Input, List, Row, Col} from 'antd';
 import Header from '../header/Header';
+import CreateRoomModal from './CreateRoomModal';
+import RoomGrid from './RoomGrid';
 
+//Selectors
+import {selectRooms} from '../../redux/selectors';
 
+//Actions
+import {connectionHandler} from '../../redux/session/sessionActions';
 
 class Lobby extends Component {
-
     render() {
         return(
             <div>
-            <Header/>
-            hi
+                <Header/>
+                <RoomGrid rooms={this.props.rooms}/>
+                <CreateRoomModal/>
             </div>
         );
     }
@@ -24,12 +28,12 @@ class Lobby extends Component {
 
 const mapStateToProps = (state) => {
     return {
-        
+        rooms: selectRooms(state)
     };
 }
 
 const mapDispatchToProps = dispatch => bindActionCreators({
-    
+    connectionHandler
 }, dispatch);
 
 export default connect(mapStateToProps, mapDispatchToProps)(Lobby);

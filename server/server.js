@@ -112,7 +112,6 @@ app.get('/callback', function(req, res) {
             },
             json: true
         };
-        console.log("AUTH_OPTIONS", authOptions);
         request.post(authOptions, function(error, response, body) {
             if (!error && response.statusCode === 200) {
 
@@ -178,7 +177,10 @@ var bindUser = function(socket, user) {
         console.log("\n\n~ Member " + user.username + " is Disconnecting. ~");
         // rm.leaveRooms(socket);
         // um.deleteUser(user);
-        socket.broadcast.emit('disconnected', {username: user.username});
+        socket.emit('action',{
+            type: 'DISCONNECTED',
+            payload: {username: user.username}
+        });
     });
 
     socket.on('sync', function(data){
@@ -255,11 +257,11 @@ io.on('connection', function(socket){
                 });
                 break;
             case "server/SOCKET_AUTH_LOADING":
-                console.log("REG: ",action.payload)
+                console.log("regular auth")
                 createSocketSession(socket, action.payload);
                 break;
             case "server/SOCKET_REAUTH_LOADING":
-                console.log("RE: ", action.payload)
+                console.log("re auth")
                 recreateSocketSession(socket, action.payload);
                 break;
             default:

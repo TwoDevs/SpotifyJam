@@ -56,6 +56,7 @@ method.addUser = function(socket, username, is_guest, spotify_id) {
     if (is_guest) {
         // Do not persist
         // Username is guest name
+        console.log("Adding guest\n")
         if (this.existsUser(user_id) || this.existsUsername(username) || this.existsSpotifyID(spotify_id)) {
             return null;
         } else {
@@ -66,6 +67,7 @@ method.addUser = function(socket, username, is_guest, spotify_id) {
     } else {
         // Persist data
         // Username needs cleaning
+        console.log("Adding user\n")
         if (this.existsUser(user_id) || this.existsUsername(username) || this.existsSpotifyID(spotify_id)) {
             return null;
         } else {
