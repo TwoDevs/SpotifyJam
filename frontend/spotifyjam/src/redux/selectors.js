@@ -5,6 +5,7 @@ const getURLHash = (state) => state.router.location.hash;
 const getAccessToken = (state) => state.session.access_token;
 const getSessionLoadingStatus = (state) => state.session.status;
 const getSocketLoadingStatus = (state) => state.spotify.status;
+const getSocketUser = (state) => state.spotify.socketUser;
 const getSessionUser = (state) => state.session.user;
 const getRooms = (state) => state.spotify.availableRooms;
 
@@ -16,6 +17,7 @@ export const selectURLHash = createSelector(
     }
 )
 
+// Select Access Token 
 export const selectAccessToken = createSelector(
     [getAccessToken],
     token => {
@@ -23,6 +25,7 @@ export const selectAccessToken = createSelector(
     }
 )
 
+// Loading Objs for verification page
 export const selectLoadingStatus = createSelector(
     getSessionLoadingStatus, 
     getSocketLoadingStatus,
@@ -31,6 +34,7 @@ export const selectLoadingStatus = createSelector(
     }
 )
 
+// Create user_req obj for authenticating
 export const selectUserReq = createSelector(
     [getSessionUser],
     user => {
@@ -39,6 +43,15 @@ export const selectUserReq = createSelector(
     }
 )
 
+// Select socket user_req obj for verifying 
+export const selectSocketUser = createSelector(
+    [getSocketUser],
+    user_req => {
+        return user_req;
+    }
+)
+
+// Select Entire User Obj from Spotify for user profile/header
 export const selectUser = createSelector(
     [getSessionUser],
     user => {
@@ -46,9 +59,18 @@ export const selectUser = createSelector(
     }
 )
 
+// Select rooms for lobby
 export const selectRooms = createSelector(
     [getRooms],
     rooms => {
         return rooms;
+    }
+)
+
+// Check Reauth status for redirect
+export const selectReauthFailed = createSelector(
+    [getSocketLoadingStatus],
+    status => {
+        return status.authStatus === 'failed';
     }
 )

@@ -1,4 +1,4 @@
-//React | Redux | Router
+//React | Redux
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
@@ -9,17 +9,24 @@ import CreateRoomModal from './CreateRoomModal';
 import RoomGrid from './RoomGrid';
 
 //Selectors
-import {selectRooms} from '../../redux/selectors';
+import {selectRooms, selectReauthFailed} from '../../redux/selectors';
 
 //Actions
-import {connectionHandler} from '../../redux/session/sessionActions';
+import {connectionHandler, logOut} from '../../redux/session/sessionActions';
 
 class Lobby extends Component {
+    constructor(props){
+        super(props);
+        props.connectionHandler();
+    }
+
     render() {
+        const {reauthFailed, logOut} = this.props;
+        if (reauthFailed){ logOut(); }
         return(
             <div>
-                <Header/>
-                <RoomGrid rooms={this.props.rooms}/>
+                {!reauthFailed && <Header/>}
+                {!reauthFailed && <RoomGrid rooms={this.props.rooms}/>}
                 <CreateRoomModal/>
             </div>
         );
@@ -28,12 +35,14 @@ class Lobby extends Component {
 
 const mapStateToProps = (state) => {
     return {
-        rooms: selectRooms(state)
+        rooms: selectRooms(state),
+        reauthFailed: selectReauthFailed(state)
     };
 }
 
 const mapDispatchToProps = dispatch => bindActionCreators({
-    connectionHandler
+    connectionHandler,
+    logOut
 }, dispatch);
 
 export default connect(mapStateToProps, mapDispatchToProps)(Lobby);

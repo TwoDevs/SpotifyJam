@@ -14,6 +14,7 @@ method.createUser = function(user_id, username, is_guest, spotify_id) {
 }
 
 method.existsUser = function(user_id) {
+    console.log("Searching user: ", user_id, " in users: ", this.users)
     return (user_id in this.users);
 }
 
@@ -73,6 +74,7 @@ method.addUser = function(socket, username, is_guest, spotify_id) {
         } else {
             var user = this.createUser(user_id,username,is_guest,spotify_id);
             this.users[user_id] = user;
+            console.log("Users: ", this.users);
             return user;
         }
     }

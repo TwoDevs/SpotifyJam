@@ -18,7 +18,7 @@ const initialSessionState = {
     expires_in: "",
     isGuest: true,
     loggedIn: false,
-    // "wait" -> "progress" -> "finished" || "fail"
+    // "wait" -> "progress" -> "finished" || "failed"
     status: {
         tokenStatus: "wait",
         profileStatus: "wait",
@@ -51,7 +51,7 @@ export default (state = initialSessionState, action) => {
                 {access_token: action.payload, isGuest: false});
         case GET_TOKENS_FAIL:
             return Object.assign({}, state, {
-                status: Object.assign({}, state.status, {tokenStatus: "fail"})
+                status: Object.assign({}, state.status, {tokenStatus: "failed"})
             });
         case GET_PROFILE_LOADING:
             return Object.assign({}, state, {
@@ -63,7 +63,7 @@ export default (state = initialSessionState, action) => {
                 {user: action.payload});
         case GET_PROFILE_FAIL:
             return Object.assign({}, state, {
-                status: Object.assign({}, state.status, {profileState: "fail"})
+                status: Object.assign({}, state.status, {profileState: "failed"})
             });
         case CLEAR_SESSION:
             return {

@@ -237,6 +237,9 @@ var recreateSocketSession = function(socket, user_req) {
             socket.emit('action', {type:'reauthenticate', payload: {status: "succeeded", req: user_req, user: user}});
             rm.sendAvailableRooms(socket);
         }
+        else {
+            socket.emit('action', {type:'reauthenticate', payload: {status: "failed", req: user_req}});
+        }
     }
 }
 

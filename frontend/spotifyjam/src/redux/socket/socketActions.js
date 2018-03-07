@@ -8,6 +8,7 @@ import {logOut} from '../session/sessionActions';
 
 import {
     selectUserReq,
+    selectSocketUser
 } from '../selectors';
 
 export const socketConnected = () => {
@@ -29,7 +30,7 @@ export const socketAuthenticate = () => {
 
 export const socketReauthenticate = () => {
     return (dispatch, getState) => {
-        const user_req = selectUserReq(getState());
+        const user_req = selectSocketUser(getState());
         dispatch({type: SOCKET_REAUTH_LOADING});
         dispatch({
             type: "server/" + SOCKET_REAUTH_LOADING,

@@ -10,12 +10,15 @@ import {
     RECIEVED_SYNC
 } from './socketConstants';
 
+// Lodash
+import {isEqual} from 'lodash';
+
 //Initial State
 const initialSocketState = {
     spotifyPlayer: {},
     socketUser: {},
     status: {
-        // "wait" -> "progress" -> "finished" || "fail",
+        // "wait" -> "progress" -> "finished" || "failed",
         connected: true,
         authStatus: 'wait',
     },
@@ -24,7 +27,7 @@ const initialSocketState = {
     roomAdmin: false
 }
 
-//Session Reducer
+//Socket Reducer
 export default (state = initialSocketState, action) => {
     switch(action.type){
         case CONNECTED:
@@ -59,15 +62,14 @@ export default (state = initialSocketState, action) => {
                 );
             }
         case 'reauthenticate':
-            if (action.payload.status === "succeeded") {
+            if (action.payload.status === "succeeded" && isEqual(action.payload.req, state.socketUser)) {
                 return Object.assign({}, state, 
                     {socketUser: action.payload.user},
                     {status: Object.assign({}, state.status, {authStatus: 'finished'})},
                 );
             } else {
-                return Object.assign({}, state, 
-                    {socketUser: action.payload.user},
-                    {status: Object.assign({}, state.status, {authStatus: 'finished'})},
+                return Object.assign({}, initialSocketState, 
+                    {status: Object.assign({}, state.status, {authStatus: 'failed'})},
                 );
             }
         case 'availableRooms':

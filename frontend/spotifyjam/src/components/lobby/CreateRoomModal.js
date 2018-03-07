@@ -43,4 +43,3 @@ class CreateRoomModal extends Component{
 }
 
 export default CreateRoomModal;
-
