@@ -1,10 +1,9 @@
 import {
     SOCKET_AUTH_LOADING,
     SOCKET_REAUTH_LOADING,
-    CONNECTED
+    CONNECTED,
+    SOCKET_LOG_OUT
 } from '../socket/socketConstants';
-
-import {logOut} from '../session/sessionActions';
 
 import {
     selectUserReq,
@@ -44,6 +43,16 @@ export const socketTestMiddle = () => {
         dispatch({
             type: "server/test",
             payload: "hello"
+        });
+    }
+}
+
+export const socketLogOut = () => {
+    return (dispatch, getState) => {
+        const user_req = selectSocketUser(getState());
+        dispatch({
+            type: "server/" + SOCKET_LOG_OUT,
+            payload: user_req
         });
     }
 }

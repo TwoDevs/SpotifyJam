@@ -25,7 +25,7 @@ export const selectAccessToken = createSelector(
     }
 )
 
-// Loading Objs for verification page
+// Combine both status obj for verification 
 export const selectLoadingStatus = createSelector(
     getSessionLoadingStatus, 
     getSocketLoadingStatus,
@@ -43,7 +43,7 @@ export const selectUserReq = createSelector(
     }
 )
 
-// Select socket user_req obj for verifying 
+// Select socket given user_req obj for verifying 
 export const selectSocketUser = createSelector(
     [getSocketUser],
     user_req => {
@@ -51,7 +51,7 @@ export const selectSocketUser = createSelector(
     }
 )
 
-// Select Entire User Obj from Spotify for user profile/header
+// Select the retrieved user obj from Spotify for user profile/header
 export const selectUser = createSelector(
     [getSessionUser],
     user => {
@@ -67,10 +67,11 @@ export const selectRooms = createSelector(
     }
 )
 
-// Check Reauth status for redirect
-export const selectReauthFailed = createSelector(
+// Check ReAuth status for redirect
+export const selectReAuthStatus = createSelector(
     [getSocketLoadingStatus],
     status => {
-        return status.authStatus === 'failed';
+        return status.authStatus;
     }
 )
+

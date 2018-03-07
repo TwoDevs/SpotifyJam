@@ -11,14 +11,24 @@ import {Steps, Icon, Spin, Button, Row, Col} from 'antd';
 import {connectionHandler} from '../../redux/session/sessionActions';
 
 //Selectors
-import {selectLoadingStatus} from '../../redux/selectors';
+import {selectLoadingStatus, selectReAuthStatus} from '../../redux/selectors';
+
+//Redirect
+import {
+    redirectToLobby
+} from '../../redux/API/historyFunctions';
 
 const Step = Steps.Step;
 
 class Verification extends Component {
-    constructor(props){
-        super(props);
-        props.connectionHandler();
+
+    componentWillMount(){
+        if (this.props.reAuthStatus === 'finished'){
+            this.props.redirectToLobby();
+        }
+        else{
+            this.props.connectionHandler();
+        }
     }
 
     render() {
@@ -73,12 +83,14 @@ class Verification extends Component {
 
 
 const mapDispatchToProps = dispatch => bindActionCreators({
-    connectionHandler
+    connectionHandler,
+    redirectToLobby
 }, dispatch);
 
 const mapStateToProps = (state) => {
     return {
-        loadingStatus: selectLoadingStatus(state)
+        loadingStatus: selectLoadingStatus(state),
+        reAuthStatus: selectReAuthStatus(state)
     };
 }
 

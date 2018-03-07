@@ -14,7 +14,6 @@ method.createUser = function(user_id, username, is_guest, spotify_id) {
 }
 
 method.existsUser = function(user_id) {
-    console.log("Searching user: ", user_id, " in users: ", this.users)
     return (user_id in this.users);
 }
 
@@ -57,10 +56,10 @@ method.addUser = function(socket, username, is_guest, spotify_id) {
     if (is_guest) {
         // Do not persist
         // Username is guest name
-        console.log("Adding guest\n")
         if (this.existsUser(user_id) || this.existsUsername(username) || this.existsSpotifyID(spotify_id)) {
             return null;
         } else {
+            console.log("Adding guest: ", user_id, "\n")
             var user = this.createUser(user_id,username,is_guest,spotify_id);
             this.users[user_id] = user;
             return user;
@@ -68,13 +67,12 @@ method.addUser = function(socket, username, is_guest, spotify_id) {
     } else {
         // Persist data
         // Username needs cleaning
-        console.log("Adding user\n")
         if (this.existsUser(user_id) || this.existsUsername(username) || this.existsSpotifyID(spotify_id)) {
             return null;
         } else {
+            console.log("Adding user: ", user_id, "\n")
             var user = this.createUser(user_id,username,is_guest,spotify_id);
             this.users[user_id] = user;
-            console.log("Users: ", this.users);
             return user;
         }
     }
@@ -83,10 +81,12 @@ method.addUser = function(socket, username, is_guest, spotify_id) {
 method.deleteUser = function(user) {
     var user_id = user.user_id;
     if (this.existsUser(user_id)) {
+        console.log("Deleting user: ", user_id, "\n")
         var user = this.users[user_id];
         delete this.users[user_id];
         return user;
     }
+    console.log(user_id, "already deleted. \n")
     return null;
 }
 

@@ -30,14 +30,6 @@ const initialSocketState = {
 //Socket Reducer
 export default (state = initialSocketState, action) => {
     switch(action.type){
-        case CONNECTED:
-            return Object.assign({}, state, 
-                {status: Object.assign({}, state.status, {connected: true})}
-            )
-        case DISCONNECTED:
-            return Object.assign({}, state, 
-                {status: Object.assign({}, state.status, {connected: false})}
-            )
         case SOCKET_AUTH_LOADING:
             return Object.assign({}, state, 
                 {status: Object.assign({}, state.status, {authStatus: 'progress'})}
@@ -49,7 +41,15 @@ export default (state = initialSocketState, action) => {
         case 'CLEAR_SESSION':
             return initialSocketState;
         //Handlers for Server Actions
-        case 'authenticate':
+        case 'socket/' + CONNECTED:
+            return Object.assign({}, state, 
+                {status: Object.assign({}, state.status, {connected: true})}
+            )
+        case 'socket/' + DISCONNECTED:
+            return Object.assign({}, state, 
+                {status: Object.assign({}, state.status, {connected: false})}
+            )
+        case 'socket/authenticate':
             if (action.payload.status === "succeeded") {
                 return Object.assign({}, state, 
                     {socketUser: action.payload.user},
@@ -61,7 +61,7 @@ export default (state = initialSocketState, action) => {
                     {status: Object.assign({}, state.status, {authStatus: 'finished'})},
                 );
             }
-        case 'reauthenticate':
+        case 'socket/reauthenticate':
             if (action.payload.status === "succeeded" && isEqual(action.payload.req, state.socketUser)) {
                 return Object.assign({}, state, 
                     {socketUser: action.payload.user},
@@ -72,12 +72,12 @@ export default (state = initialSocketState, action) => {
                     {status: Object.assign({}, state.status, {authStatus: 'failed'})},
                 );
             }
-        case 'availableRooms':
+        case 'socket/availableRooms':
             return Object.assign({}, state, 
                 {currentRoom: action.payload.currentRoom},
                 {availableRooms: action.payload.rooms}
             );
-        case 'config':
+        case 'socket/config':
             return Object.assign({}, state, {roomAdmin: action.payload.isAdmin});
         default:
             return state;

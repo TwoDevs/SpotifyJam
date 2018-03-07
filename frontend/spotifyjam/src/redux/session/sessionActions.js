@@ -16,6 +16,7 @@ import {
 import {
     socketAuthenticate,
     socketReauthenticate,
+    socketLogOut
 } from '../socket/socketActions';
 
 //API 
@@ -115,9 +116,10 @@ export const authenticate = () => {
 export const logOut = () => {
     return dispatch => {
         //Dispatch Router Log Out
-        dispatch(clearSession())
         dispatch(redirectToHome());
+        dispatch(socketLogOut());
         dispatch({ type: LOG_OUT });
+        dispatch(clearSession())
     }
 }
 

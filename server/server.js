@@ -174,11 +174,9 @@ app.get('/refresh_token', function(req, res) {
 var bindUser = function(socket, user) {
     socket.join(global_room);
     socket.on('disconnect', function(){
-        console.log("\n\n~ Member " + user.username + " is Disconnecting. ~");
-        // rm.leaveRooms(socket);
-        // um.deleteUser(user);
+        console.log("\n~ Member " + user.username + " is Disconnecting. ~");
         socket.emit('action',{
-            type: 'DISCONNECTED',
+            type: 'socket/DISCONNECTED',
             payload: {username: user.username}
         });
     });
@@ -210,35 +208,36 @@ var bindUser = function(socket, user) {
 }
 
 var createSocketSession = function(socket, user_req) {
+    console.log("\nRegular Authorization enacted by: ", user_req.username)
     var {spotify_id, username, is_guest} = user_req;
     var user = um.addUser(socket, username, is_guest, spotify_id);
     if (user == null) {
-        socket.emit('action', {type:'authenticate', payload: {status: "failed", req: user_req}});
+        socket.emit('action', {type:'socket/authenticate', payload: {status: "failed", req: user_req}});
     } else {
-        console.log("\n\n~ Session Created - Member " +  user.username + " | Connected to socket: " + socket.id + " ~");
+        console.log("\n~ Session Created - Member " +  user.username + " | Connected to socket: " + socket.id + " ~");
         rm.joinRoom(socket, default_room, function(){});
         bindUser(socket, user);
-        socket.emit('action', {type: 'authenticate', payload: {status: "succeeded", req: user_req, user: user}});
+        socket.emit('action', {type:'socket/authenticate', payload: {status: "succeeded", req: user_req, user: user}});
         rm.sendAvailableRooms(socket);
     }
 }
 
 var recreateSocketSession = function(socket, user_req) {
+    console.log("\nRe-Authorization enacted by: ", user_req.username)
     if (user_req == null) {
-        socket.emit('action', {type:'reauthenticate', payload: {status: "failed", req: user_req}});
+        socket.emit('action', {type:'socket/reauthenticate', payload: {status: "failed", req: user_req}});
     } else {
-        console.log("Not null\n")
         if (um.existsUser(user_req.user_id)) {
             var user = um.getUser(user_req.user_id);
-            console.log("user exists\n")
-            console.log("\n\n~ Session Rejoined - Member " +  user.username + " | Connected to socket: " + socket.id + " ~");
+            console.log("User: ", user_req.user_id, " found.")
+            console.log("\n~ Session Rejoined - Member " +  user.username + " | Connected to socket: " + socket.id + " ~");
             rm.joinRoom(socket, default_room, function(){});
             bindUser(socket, user);
-            socket.emit('action', {type:'reauthenticate', payload: {status: "succeeded", req: user_req, user: user}});
+            socket.emit('action', {type:'socket/reauthenticate', payload: {status: "succeeded", req: user_req, user: user}});
             rm.sendAvailableRooms(socket);
         }
         else {
-            socket.emit('action', {type:'reauthenticate', payload: {status: "failed", req: user_req}});
+            socket.emit('action', {type:'socket/reauthenticate', payload: {status: "failed", req: user_req}});
         }
     }
 }
@@ -247,7 +246,7 @@ io.on('connection', function(socket){
 
     // Send feedback connected!
     socket.emit('action', {
-        type: 'CONNECTED'
+        type:'socket/CONNECTED'
     });
 
     socket.on('action', action => {
@@ -255,22 +254,25 @@ io.on('connection', function(socket){
             case "server/test":
                 console.log("Test socket middleware action recieved!");
                 socket.emit('action', {
-                    type:'middleware test', 
+                    type:'socket/middleware test', 
                     payload:'good day!'
                 });
                 break;
             case "server/SOCKET_AUTH_LOADING":
-                console.log("regular auth")
                 createSocketSession(socket, action.payload);
                 break;
             case "server/SOCKET_REAUTH_LOADING":
-                console.log("re auth")
                 recreateSocketSession(socket, action.payload);
+                break;
+            case "server/SOCKET_LOG_OUT":
+                console.log("\n~ Member " + action.payload.username + " is Logging Out. ~");
+                rm.leaveRooms(socket);
+                um.deleteUser(action.payload);
                 break;
             default:
                 console.log("Test socket middleware action recieved but type was incorrect");
                 socket.emit('action', {
-                    type:'message', 
+                    type:'socket/message', 
                     payload:'kind of good day!'
                 });
         }
@@ -278,7 +280,7 @@ io.on('connection', function(socket){
 
     socket.on('disconnect', function(){
         socket.emit('action',{
-            type: 'DISCONNECTED'
+            type:'socket/DISCONNECTED'
         });
     });
 });

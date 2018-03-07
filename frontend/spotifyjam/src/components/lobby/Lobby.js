@@ -9,7 +9,7 @@ import CreateRoomModal from './CreateRoomModal';
 import RoomGrid from './RoomGrid';
 
 //Selectors
-import {selectRooms, selectReauthFailed} from '../../redux/selectors';
+import {selectRooms, selectReAuthStatus} from '../../redux/selectors';
 
 //Actions
 import {connectionHandler, logOut} from '../../redux/session/sessionActions';
@@ -21,12 +21,13 @@ class Lobby extends Component {
     }
 
     render() {
-        const {reauthFailed, logOut} = this.props;
-        if (reauthFailed){ logOut(); }
+        const {reAuthStatus, logOut} = this.props;
+        const failedAuth = reAuthStatus === 'failed';
+        if (failedAuth){ logOut(); }
         return(
             <div>
-                {!reauthFailed && <Header/>}
-                {!reauthFailed && <RoomGrid rooms={this.props.rooms}/>}
+                {!failedAuth && <Header/>}
+                {!failedAuth && <RoomGrid rooms={this.props.rooms}/>}
                 <CreateRoomModal/>
             </div>
         );
@@ -36,7 +37,7 @@ class Lobby extends Component {
 const mapStateToProps = (state) => {
     return {
         rooms: selectRooms(state),
-        reauthFailed: selectReauthFailed(state)
+        reAuthStatus: selectReAuthStatus(state)
     };
 }
 

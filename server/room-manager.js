@@ -19,9 +19,9 @@ method.isGlobalRoom = function(room_name) {
 }
 
 method.sendAvailableRooms = function(socket) {
-    console.log("sending rooms");
+    console.log("Sending available rooms.");
     socket.emit('action', {
-        type: 'availableRooms', 
+        type:'socket/availableRooms', 
         payload: {rooms: Object.keys(this.rooms), currentRoom: this.currentRoom(socket)}
     });
 }
@@ -89,12 +89,12 @@ method.joinRoom = function(socket, room_name, callback) {
                 // Add admin
                 joinRoom.admins.push(socket.id);
                 socket.emit('action', {
-                    type: 'config', 
+                    type:'socket/config', 
                     payload: {isAdmin: true}
                 });
             } else {
                 socket.emit('action', {
-                    type: 'config', 
+                    type:'socket/config', 
                     payload: {isAdmin: false}
                 });
             }
