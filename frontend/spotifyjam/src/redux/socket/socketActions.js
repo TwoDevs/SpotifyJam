@@ -2,7 +2,8 @@ import {
     SOCKET_AUTH_LOADING,
     SOCKET_REAUTH_LOADING,
     CONNECTED,
-    SOCKET_LOG_OUT
+    SOCKET_LOG_OUT,
+    SOCKET_CREATE_ROOM
 } from '../socket/socketConstants';
 
 import {
@@ -38,11 +39,11 @@ export const socketReauthenticate = () => {
     }
 }
 
-export const socketTestMiddle = () => {
+export const socketCreateRoom = (room_name) => {
     return dispatch => {
         dispatch({
-            type: "server/test",
-            payload: "hello"
+            type: "server/" + SOCKET_CREATE_ROOM,
+            payload: {room_name}
         });
     }
 }

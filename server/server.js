@@ -193,12 +193,6 @@ var bindUser = function(socket, user) {
         rm.sendAvailableRooms(socket);
     });
 
-    socket.on('createRoom', function(data) {
-        console.log("Creating room " + data.room_name);
-        rm.createRoom(data.room_name);
-        rm.broadcastAvailableRooms(io);
-    });
-
     socket.on('joinRoom', function(data) {
         rm.joinRoom(socket, data.room_name, function() {
             console.log(user.username + " joined room " + rm.currentRoom(socket));
@@ -268,6 +262,11 @@ io.on('connection', function(socket){
                 console.log("\n~ Member " + action.payload.username + " is Logging Out. ~");
                 rm.leaveRooms(socket);
                 um.deleteUser(action.payload);
+                break;
+            case "server/SOCKET_CREATE_ROOM":
+                console.log("Creating room " + action.payload.room_name);
+                rm.createRoom(action.payload.room_name);
+                rm.broadcastAvailableRooms(io);
                 break;
             default:
                 console.log("Test socket middleware action recieved but type was incorrect");

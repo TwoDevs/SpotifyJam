@@ -21,13 +21,16 @@ method.isGlobalRoom = function(room_name) {
 method.sendAvailableRooms = function(socket) {
     console.log("Sending available rooms.");
     socket.emit('action', {
-        type:'socket/availableRooms', 
+        type: 'socket/availableRooms', 
         payload: {rooms: Object.keys(this.rooms), currentRoom: this.currentRoom(socket)}
     });
 }
 
 method.broadcastAvailableRooms = function(io) {
-    io.to(this._global_room).emit('availableRooms', {rooms: Object.keys(this.rooms)});
+    io.to(this._global_room).emit('action', {
+        type: 'socket/availableRooms', 
+        payload: {rooms: Object.keys(this.rooms)}
+    });
 }
 
 method.currentRoom = function(socket) {

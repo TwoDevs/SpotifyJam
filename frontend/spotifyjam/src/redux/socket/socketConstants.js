@@ -12,4 +12,6 @@ export const DISCONNECTED = "DISCONNECTED";
 export const SEND_SYNC = "SEND_SYNC";
 export const RECIEVED_SYNC = "RECIEVED_SYNC";
 
+export const SOCKET_CREATE_ROOM = "SOCKET_CREATE_ROOM";
+
 export const SOCKET_LOG_OUT = "SOCKET_LOG_OUT";

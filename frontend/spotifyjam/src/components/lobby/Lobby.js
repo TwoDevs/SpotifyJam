@@ -13,6 +13,7 @@ import {selectRooms, selectReAuthStatus} from '../../redux/selectors';
 
 //Actions
 import {connectionHandler, logOut} from '../../redux/session/sessionActions';
+import {socketCreateRoom} from '../../redux/socket/socketActions';
 
 class Lobby extends Component {
     constructor(props){
@@ -28,7 +29,7 @@ class Lobby extends Component {
             <div>
                 {!failedAuth && <Header/>}
                 {!failedAuth && <RoomGrid rooms={this.props.rooms}/>}
-                <CreateRoomModal/>
+                <CreateRoomModal createRoom={this.props.socketCreateRoom}/>
             </div>
         );
     }
@@ -43,7 +44,8 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = dispatch => bindActionCreators({
     connectionHandler,
-    logOut
+    socketCreateRoom,
+    logOut,
 }, dispatch);
 
 export default connect(mapStateToProps, mapDispatchToProps)(Lobby);
