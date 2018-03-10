@@ -1,7 +1,7 @@
 //Packages and Setup
 var defaultPort = 8000;
-var express = require('express'); // Express web server framework
-var request = require('request'); // "Request" library
+var express = require('express'); //Express web server framework
+var request = require('request'); //"Request" library
 var app = require('express')();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
@@ -62,8 +62,8 @@ var generateRandomString = function(length) {
 var stateKey = 'spotify_auth_state';
 
 
-// Express Spotify Verification
-// ----------------------------
+//Express Spotify Verification
+//----------------------------
 app.use(express.static(__dirname + '/public'))
    .use(cookieParser());
 
@@ -72,7 +72,7 @@ app.get('/login', function(req, res) {
     var state = generateRandomString(16);
     res.cookie(stateKey, state);
 
-    // your application requests authorization
+    //your application requests authorization
     var scope = 'user-read-currently-playing user-modify-playback-state user-read-private';
     res.redirect('https://accounts.spotify.com/authorize?' +
         querystring.stringify({
@@ -86,8 +86,8 @@ app.get('/login', function(req, res) {
 
 app.get('/callback', function(req, res) {
 
-    // Application requests refresh and access tokens
-    // after checking the state parameter
+    //Application requests refresh and access tokens
+    //after checking the state parameter
     var code = req.query.code || null;
     var state = req.query.state || null;
     var storedState = req.cookies ? req.cookies[stateKey] : null;
@@ -123,10 +123,10 @@ app.get('/callback', function(req, res) {
                     json: true
                 };
 
-                // use the access token to access the Spotify Web API
+                //use the access token to access the Spotify Web API
                 request.get(options, function(error, response, body) {});
 
-                // we can also pass the token to the browser to make requests from there
+                //we can also pass the token to the browser to make requests from there
                 res.redirect(frontend_url + '#' +
                 querystring.stringify({
                     access_token,
@@ -146,7 +146,7 @@ app.get('/callback', function(req, res) {
 });
 
 app.get('/refresh_token', function(req, res) {
-  // requesting access token from refresh token
+  //requesting access token from refresh token
   var refresh_token = req.query.refresh_token;
   var authOptions = {
     url: 'https://accounts.spotify.com/api/token',
@@ -169,8 +169,8 @@ app.get('/refresh_token', function(req, res) {
 });
 
 
-// Socket.io Session Code
-// ----------------------
+//Socket.io Session Code
+//----------------------
 var bindUser = function(socket, user) {
     socket.join(global_room);
     socket.on('disconnect', function(){
@@ -238,7 +238,7 @@ var recreateSocketSession = function(socket, user_req) {
 
 io.on('connection', function(socket){
 
-    // Send feedback connected!
+    //Send feedback connected!
     socket.emit('action', {
         type:'socket/CONNECTED'
     });
@@ -270,10 +270,7 @@ io.on('connection', function(socket){
                 break;
             default:
                 console.log("Test socket middleware action recieved but type was incorrect");
-                socket.emit('action', {
-                    type:'socket/message', 
-                    payload:'kind of good day!'
-                });
+                console.log(action.type)
         }
     })
 

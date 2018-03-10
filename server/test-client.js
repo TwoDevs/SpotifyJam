@@ -1,7 +1,7 @@
 var socketIOClient = require("socket.io-client");
 var defaultPort = 8000;
-var express = require('express'); // Express web server framework
-var request = require('request'); // "Request" library
+var express = require('express'); //Express web server framework
+var request = require('request'); //"Request" library
 var app = require('express')();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
@@ -89,26 +89,26 @@ rl.on('line', (line) => {
     } else if (line == "available") {
         dispRooms();
     } else {
-        var index = line.indexOf(" ");  // Gets the first index where a space occours
+        var index = line.indexOf(" ");  //Gets the first index where a space occours
         if (index < 1) {
             console.log("Command '" + line + "' not recognized, use help for the command list.");
         } else {
-            var command = line.substr(0, index); // Gets the first part
-            var text = line.substr(index + 1);  // Gets the second part
+            var command = line.substr(0, index); //Gets the first part
+            var text = line.substr(index + 1);  //Gets the second part
 
             if (command == "authenticate") {
                 var isGuestIndex = text.indexOf(" ");
                 if (isGuestIndex < 0) {
                     console.log(" malformed: <is_guest> is missing");
                 } else {
-                    var is_guest = text.substr(0, isGuestIndex); // Gets the first part
-                    var text = text.substr(isGuestIndex + 1);  // Gets the second part
+                    var is_guest = text.substr(0, isGuestIndex); //Gets the first part
+                    var text = text.substr(isGuestIndex + 1);  //Gets the second part
                     var spotifyIDIndex = text.indexOf(" ");
                     if (spotifyIDIndex < 0) {
                         console.log("authenticate malformed: <spotify_id> is missing");
                     } else {
-                        var spotify_id = text.substr(0, spotifyIDIndex); // Gets the first part
-                        var username = text.substr(spotifyIDIndex + 1);  // Gets the second part
+                        var spotify_id = text.substr(0, spotifyIDIndex); //Gets the first part
+                        var username = text.substr(spotifyIDIndex + 1);  //Gets the second part
                         var user_req = {
                             spotify_id : spotify_id,
                             username : username,
