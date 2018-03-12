@@ -14,7 +14,7 @@ import storage from "redux-persist/lib/storage";
 
 //Socket Configuration
 import io from "socket.io-client";
-const serverURL = process.env.REACT_APP_SERVER_URL || "https://lit-shelf-90391.herokuapp.com";
+const serverURL = process.env.REACT_APP_SERVER_URL || "https://spotify-jam.herokuapp.com";
 let socket = io(serverURL);
 let socketIOMiddleware = createSocketIoMiddleware(socket, "server/");
 
