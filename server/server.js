@@ -6,7 +6,8 @@ var app = express();
 var server = require("http").Server(app);
 var io = require("socket.io")(server);
 //var io = require('socket.io')(process.env.PORT || defaultPort);
-server.listen(defaultPort);
+var port = process.env.PORT || defaultPort;
+server.listen(port);
 
 //Third Party Packages
 var shortid = require("shortid");
@@ -23,7 +24,8 @@ var rm = new RoomManager(global_room, default_room);
 var UserManager = require("./user-manager.js");
 var um = new UserManager();
 
-var devMode = true;
+//DEVELOPMENT / PRODUCTION MODE SET
+var devMode = false;
 for (let j = 2; j < process.argv.length; j++) {
   console.log(j + " -> " + process.argv[j]);
   if (process.argv[j] === "--prod") {
@@ -32,19 +34,12 @@ for (let j = 2; j < process.argv.length; j++) {
 }
 
 //Key Setup
-var {
-  devURLs,
-  productionURLs,
-  client_id,
-  client_secret
-} = require("./devKeys");
-var { redirect_uri, frontend_url, server_url, error_url, mode } = devMode
-  ? devURLs
-  : productionURLs;
+var { devURLs, productionURLs, client_id, client_secret } = require("./devKeys");
+var { redirect_uri, frontend_url, server_url, error_url, mode } = devMode ? devURLs : productionURLs;
 
 //---Server Start---
 console.log("\n---------------------------");
-console.log("Server Started - Port: " + defaultPort);
+console.log("Server Started - Port: " + port);
 console.log("\nRedirect URI: " + redirect_uri);
 console.log("Frontend URL: " + frontend_url);
 console.log("Error URL: " + error_url);
@@ -54,8 +49,7 @@ console.log("---------------------------\n");
 //Spotify Authorization
 var generateRandomString = function(length) {
   var text = "";
-  var possible =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
   for (var i = 0; i < length; i++) {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
@@ -74,8 +68,7 @@ app.get("/login", function(req, res) {
   res.cookie(stateKey, state);
 
   //your application requests authorization
-  var scope =
-    "user-read-currently-playing user-modify-playback-state user-read-private";
+  var scope = "user-read-currently-playing user-modify-playback-state user-read-private";
   res.redirect(
     "https://accounts.spotify.com/authorize?" +
       querystring.stringify({
@@ -114,9 +107,7 @@ app.get("/callback", function(req, res) {
         grant_type: "authorization_code"
       },
       headers: {
-        Authorization:
-          "Basic " +
-          new Buffer(client_id + ":" + client_secret).toString("base64")
+        Authorization: "Basic " + new Buffer(client_id + ":" + client_secret).toString("base64")
       },
       json: true
     };
@@ -164,9 +155,7 @@ app.get("/refresh_token", function(req, res) {
   var authOptions = {
     url: "https://accounts.spotify.com/api/token",
     headers: {
-      Authorization:
-        "Basic " +
-        new Buffer(client_id + ":" + client_secret).toString("base64")
+      Authorization: "Basic " + new Buffer(client_id + ":" + client_secret).toString("base64")
     },
     form: {
       grant_type: "refresh_token",
@@ -202,12 +191,10 @@ var bindUser = function(socket, user) {
   });
 
   socket.on("msg", function(message) {
-    socket.broadcast
-      .to(rm.currentRoom(socket))
-      .emit("msg", {
-        username: user.username,
-        message_text: message.message_text
-      });
+    socket.broadcast.to(rm.currentRoom(socket)).emit("msg", {
+      username: user.username,
+      message_text: message.message_text
+    });
   });
 
   socket.on("availableRooms", function() {
@@ -232,13 +219,7 @@ var createSocketSession = function(socket, user_req) {
       payload: { status: "failed", req: user_req }
     });
   } else {
-    console.log(
-      "\n~ Session Created - Member " +
-        user.username +
-        " | Connected to socket: " +
-        socket.id +
-        " ~"
-    );
+    console.log("\n~ Session Created - Member " + user.username + " | Connected to socket: " + socket.id + " ~");
     rm.joinRoom(socket, default_room, function() {});
     bindUser(socket, user);
     socket.emit("action", {
@@ -260,13 +241,7 @@ var recreateSocketSession = function(socket, user_req) {
     if (um.existsUser(user_req.user_id)) {
       var user = um.getUser(user_req.user_id);
       console.log("User: ", user_req.user_id, " found.");
-      console.log(
-        "\n~ Session Rejoined - Member " +
-          user.username +
-          " | Connected to socket: " +
-          socket.id +
-          " ~"
-      );
+      console.log("\n~ Session Rejoined - Member " + user.username + " | Connected to socket: " + socket.id + " ~");
       rm.joinRoom(socket, default_room, function() {});
       bindUser(socket, user);
       socket.emit("action", {
@@ -305,9 +280,7 @@ io.on("connection", function(socket) {
         recreateSocketSession(socket, action.payload);
         break;
       case "server/SOCKET_LOG_OUT":
-        console.log(
-          "\n~ Member " + action.payload.username + " is Logging Out. ~"
-        );
+        console.log("\n~ Member " + action.payload.username + " is Logging Out. ~");
         rm.leaveRooms(socket);
         um.deleteUser(action.payload);
         break;
@@ -317,9 +290,7 @@ io.on("connection", function(socket) {
         rm.broadcastAvailableRooms(io);
         break;
       default:
-        console.log(
-          "Test socket middleware action recieved but type was incorrect"
-        );
+        console.log("Test socket middleware action recieved but type was incorrect");
         console.log(action.type);
     }
   });

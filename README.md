@@ -25,7 +25,7 @@ cd frontend/spotifyjam/
 1.  yarn (install)
 2.  yarn dev (run)
 
-## Deploy Build
+## Deploy Frontend Build
 
 1.  npm install -g firebase-tools
 2.  firebase login
@@ -46,7 +46,7 @@ cd server/
 _server_
 
 1.  npm install
-2.  node server.js
+2.  node server
 
 _client_
 
@@ -57,7 +57,18 @@ _client_
 * join test-room
 * send hello!
 
-## Deploy Server
+## Deploy Server with Heroku
+
+1.  Install [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli)
+2.  heroku login
+3.  Check for project and remote setup
+    4.  git remote -v
+    5.  heroku git:remote -a "our-app-123"
+4.  At root
+    7.  git subtree push --prefix server heroku master
+5.  heroku logs --tail
+
+## Deploy Server with Google Cloud & Kubernetes
 
 1.  git pull origin master
 2.  export PROJECT_ID="$(gcloud config get-value project -q)"

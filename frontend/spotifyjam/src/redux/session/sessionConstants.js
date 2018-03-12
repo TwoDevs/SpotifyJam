@@ -9,3 +9,4 @@ export const GET_PROFILE_FAIL = "GET_PROFILE_FAIL";
 
 export const CLEAR_SESSION = "CLEAR_SESSION";
 export const LOG_OUT = "LOG_OUT";
+export const FAILED_REAUTH = "FAILED_REAUTH";

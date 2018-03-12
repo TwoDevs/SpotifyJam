@@ -29,8 +29,7 @@
     "spotify-web-api-js": "^0.23.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "dev": "cross-env REACT_APP_SERVER_URL=http://localhost:8000 react-scripts start ",
+    "dev": "cross-env REACT_APP_SERVER_URL=http://localhost:8000 react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"

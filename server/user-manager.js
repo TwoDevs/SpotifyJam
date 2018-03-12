@@ -5,6 +5,7 @@ function UserManager() {
 }
 
 method.createUser = function(user_id, username, is_guest, spotify_id) {
+  console.log("Creating: ", username);
   return {
     user_id: user_id,
     username: username,
@@ -70,11 +71,7 @@ method.addUser = function(socket, username, is_guest, spotify_id) {
   if (is_guest) {
     //Do not persist
     //Username is guest name
-    if (
-      this.existsUser(user_id) ||
-      this.existsUsername(username) ||
-      this.existsSpotifyID(spotify_id)
-    ) {
+    if (this.existsUser(user_id) || this.existsUsername(username) || this.existsSpotifyID(spotify_id)) {
       return null;
     } else {
       console.log("Adding guest: ", user_id, "\n");
@@ -85,11 +82,7 @@ method.addUser = function(socket, username, is_guest, spotify_id) {
   } else {
     //Persist data
     //Username needs cleaning
-    if (
-      this.existsUser(user_id) ||
-      this.existsUsername(username) ||
-      this.existsSpotifyID(spotify_id)
-    ) {
+    if (this.existsUser(user_id) || this.existsUsername(username) || this.existsSpotifyID(spotify_id)) {
       return null;
     } else {
       console.log("Adding user: ", user_id, "\n");

@@ -1,13 +1,5 @@
 //Constants
-import {
-  SOCKET_AUTH_LOADING,
-  SOCKET_REAUTH_LOADING,
-  SOCKET_CREATE_ROOM_LOADING,
-  CONNECTED,
-  DISCONNECTED,
-  SEND_SYNC,
-  RECIEVED_SYNC
-} from "./socketConstants";
+import { SOCKET_AUTH_LOADING, SOCKET_REAUTH_LOADING, SOCKET_CREATE_ROOM_LOADING, CONNECTED, DISCONNECTED, SEND_SYNC, RECIEVED_SYNC } from "./socketConstants";
 
 //Lodash
 import { isEqual } from "lodash";
@@ -75,10 +67,7 @@ export default (state = initialSocketState, action) => {
         );
       }
     case "socket/reauthenticate":
-      if (
-        action.payload.status === "succeeded" &&
-        isEqual(action.payload.req, state.socketUser)
-      ) {
+      if (action.payload.status === "succeeded" && isEqual(action.payload.req, state.socketUser)) {
         return Object.assign(
           {},
           state,
@@ -100,7 +89,7 @@ export default (state = initialSocketState, action) => {
           status: Object.assign({}, state.status, { roomCreation: "finished" })
         },
         { currentRoom: action.payload.currentRoom },
-        { availableRooms: action.payload.rooms }
+        { availableRooms: Object.assign({}, state.availableRooms, action.payload.rooms) }
       );
     case "socket/config":
       return Object.assign({}, state, { roomAdmin: action.payload.isAdmin });
