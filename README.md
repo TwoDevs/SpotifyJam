@@ -17,7 +17,7 @@ Tools:
 ## Frontend Development
 
 ```
-cd frontend/spotifyjam/
+cd /spotifyjam/
 ```
 
 ## Run Local Site
@@ -38,19 +38,25 @@ cd frontend/spotifyjam/
 ## Backend Development
 
 ```
-cd server/
+1.  Install [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli)
+2.  heroku login
+3.  heroku git:clone -a spotify-jam
 ```
 
 ## Run Local Server
 
 _server_
 
-1.  npm install
-2.  node server
+1.  cd spotify-jam
+2.  npm install
+3.  node server
 
 _client_
 
-1.  node test-client.js
+1.  cd spotify-jam
+2.  node test-client.js
+
+Commands (use ">help" for help)
 
 * available
 * create test-room
@@ -59,14 +65,8 @@ _client_
 
 ## Deploy Server with Heroku
 
-1.  Install [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli)
-2.  heroku login
-3.  Check for project and remote setup
-    4.  git remote -v
-    5.  heroku git:remote -a "our-app-123"
-4.  At root
-    7.  git subtree push --prefix server heroku master
-5.  heroku logs --tail
+1.  Commit and push (master)
+2.  heroku logs --tail
 
 ## Deploy Server with Google Cloud & Kubernetes
 
