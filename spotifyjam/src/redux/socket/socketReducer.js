@@ -1,5 +1,15 @@
 //Constants
-import { SOCKET_AUTH_LOADING, SOCKET_REAUTH_LOADING, SOCKET_CREATE_ROOM_LOADING, CONNECTED, DISCONNECTED, SEND_SYNC, RECIEVED_SYNC } from "./socketConstants";
+import {
+  SOCKET_AUTH_LOADING,
+  SOCKET_AUTH_FAIL,
+  SOCKET_REAUTH_LOADING,
+  SOCKET_REAUTH_FAIL,
+  SOCKET_CREATE_ROOM_LOADING,
+  CONNECTED,
+  DISCONNECTED,
+  SEND_SYNC,
+  RECIEVED_SYNC
+} from "./socketConstants";
 
 //Lodash
 import { isEqual } from "lodash";
@@ -26,9 +36,17 @@ export default (state = initialSocketState, action) => {
       return Object.assign({}, state, {
         status: Object.assign({}, state.status, { authStatus: "progress" })
       });
+    case SOCKET_AUTH_FAIL:
+      return Object.assign({}, state, {
+        status: Object.assign({}, state.status, { authStatus: "failed" })
+      });
     case SOCKET_REAUTH_LOADING:
       return Object.assign({}, state, {
         status: Object.assign({}, state.status, { authStatus: "progress" })
+      });
+    case SOCKET_REAUTH_FAIL:
+      return Object.assign({}, state, {
+        status: Object.assign({}, state.status, { authStatus: "failed" })
       });
     case SOCKET_CREATE_ROOM_LOADING:
       return Object.assign({}, state, {
@@ -62,7 +80,7 @@ export default (state = initialSocketState, action) => {
           state,
           { socketUser: action.payload.user },
           {
-            status: Object.assign({}, state.status, { authStatus: "finished" })
+            status: Object.assign({}, state.status, { authStatus: "failed" })
           }
         );
       }

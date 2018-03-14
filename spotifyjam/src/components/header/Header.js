@@ -5,7 +5,7 @@ import { bindActionCreators } from "redux";
 import { Link } from "react-router-dom";
 
 //Selector
-import { selectUser } from "../../redux/selectors";
+import { selectUser, selectConnection } from "../../redux/selectors";
 
 //Action
 import { logOut } from "../../redux/session/sessionActions";
@@ -23,19 +23,20 @@ class Header extends Component {
   };
 
   render() {
-    const { user } = this.props;
+    const { user, connected } = this.props;
     return (
       <Row>
-        <Col span={3}>
+        <Col span={6}>
           <Menu mode="horizontal">
             <Menu.Item>
               <Link to="/lobby">
                 <SpotifyIcon /> Spotify Jam
               </Link>
             </Menu.Item>
+            <Menu.Item>{connected ? <Icon type="wifi" /> : <Icon type="loading" />} Connection</Menu.Item>
           </Menu>
         </Col>
-        <Col span={3} offset={18}>
+        <Col span={3} offset={15}>
           <Menu mode="horizontal" onClick={this.handleLogOut}>
             <SubMenu
               title={
@@ -57,7 +58,8 @@ class Header extends Component {
 
 const mapStateToProps = state => {
   return {
-    user: selectUser(state)
+    user: selectUser(state),
+    connected: selectConnection
   };
 };
 

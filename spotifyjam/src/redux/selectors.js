@@ -1,4 +1,5 @@
 import { createSelector } from "reselect";
+import { includes } from "lodash";
 
 //Input Selectors
 const getURLHash = state => state.router.location.hash;
@@ -8,6 +9,7 @@ const getSocketLoadingStatus = state => state.spotify.status;
 const getSocketUser = state => state.spotify.socketUser;
 const getSessionUser = state => state.session.user;
 const getRooms = state => state.spotify.availableRooms;
+const getConnection = state => state.spotify.connected;
 
 //Memoized Selectors
 export const selectURLHash = createSelector([getURLHash], hash => {
@@ -20,13 +22,9 @@ export const selectAccessToken = createSelector([getAccessToken], token => {
 });
 
 //Combine both status obj for verification
-export const selectLoadingStatus = createSelector(
-  getSessionLoadingStatus,
-  getSocketLoadingStatus,
-  (sessionStatus, socketAuth) => {
-    return Object.assign({}, sessionStatus, socketAuth);
-  }
-);
+export const selectLoadingStatus = createSelector(getSessionLoadingStatus, getSocketLoadingStatus, (sessionStatus, socketAuth) => {
+  return Object.assign({}, sessionStatus, socketAuth);
+});
 
 //Create user_req obj for authenticating
 export const selectUserReq = createSelector([getSessionUser], user => {
@@ -50,9 +48,16 @@ export const selectRooms = createSelector([getRooms], rooms => {
 });
 
 //Check ReAuth status for redirect
-export const selectReAuthStatus = createSelector(
-  [getSocketLoadingStatus],
-  status => {
-    return status.authStatus;
-  }
-);
+export const selectReAuthStatus = createSelector([getSocketLoadingStatus], status => {
+  return status.authStatus;
+});
+
+//Any failed aync operations indicated by status
+export const anyFail = createSelector([selectLoadingStatus], statusObj => {
+  return includes(statusObj, "failed");
+});
+
+//Select Websocket Connection
+export const selectConnection = createSelector([getConnection], connection => {
+  return connection;
+});

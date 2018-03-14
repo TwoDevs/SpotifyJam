@@ -8,7 +8,7 @@ import { Spin } from "antd";
 import Header from "../header/Header";
 
 //Selectors
-import { selectReAuthStatus } from "../../redux/selectors";
+import { anyFail } from "../../redux/selectors";
 
 //Actions
 import { connectionHandler, logOut } from "../../redux/session/sessionActions";
@@ -20,8 +20,8 @@ class AuthRoute extends Component {
   }
 
   reAuthHandler = () => {
-    const { reAuthStatus, logOut } = this.props;
-    if (reAuthStatus === "failed") {
+    const { anyFail, logOut } = this.props;
+    if (anyFail) {
       logOut();
     }
   };
@@ -29,14 +29,14 @@ class AuthRoute extends Component {
   render() {
     //Wrapped Component
     const { Component } = this.props;
-    const { reAuthStatus } = this.props;
+    const { anyFail } = this.props;
 
     //Handle Re-Authorization
     this.reAuthHandler();
 
     return (
       <div>
-        {reAuthStatus === "finished" ? (
+        {!anyFail ? (
           <div>
             <Header />
             <Component />
@@ -51,7 +51,7 @@ class AuthRoute extends Component {
 
 const mapStateToProps = state => {
   return {
-    reAuthStatus: selectReAuthStatus(state)
+    anyFail: anyFail(state)
   };
 };
 

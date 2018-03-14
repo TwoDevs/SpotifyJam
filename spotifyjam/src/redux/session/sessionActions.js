@@ -1,5 +1,15 @@
 //Constants
-import { GET_TOKENS_LOADING, GET_TOKENS_SUCCESS, GET_TOKENS_FAIL, GET_PROFILE_LOADING, GET_PROFILE_SUCCESS, GET_PROFILE_FAIL, CLEAR_SESSION, LOG_OUT, FAILED_REAUTH } from "./sessionConstants";
+import {
+  GET_TOKENS_LOADING,
+  GET_TOKENS_SUCCESS,
+  GET_TOKENS_FAIL,
+  GET_PROFILE_LOADING,
+  GET_PROFILE_SUCCESS,
+  GET_PROFILE_FAIL,
+  CLEAR_SESSION,
+  LOG_OUT,
+  FAILED_REAUTH
+} from "./sessionConstants";
 
 //Socket Actions
 import { socketAuthenticate, socketReauthenticate, socketLogOut } from "../socket/socketActions";
@@ -10,7 +20,7 @@ import { verifyTokens, setSpotifyTokens, getProfile } from "../API/spotifyFuncti
 import { redirectToHome } from "../API/historyFunctions";
 
 //Selectors
-import { selectURLHash, selectAccessToken } from "../selectors";
+import { selectURLHash, selectAccessToken, anyFail } from "../selectors";
 
 export const setTokens = () => {
   return (dispatch, getState) => {
@@ -38,26 +48,29 @@ export const setTokens = () => {
 };
 
 export const setProfile = () => {
-  return dispatch => {
+  return (dispatch, getState) => {
     //Start Loading
     dispatch({
       type: GET_PROFILE_LOADING
     });
-    //Spotify API Profile Retrieval
-    return getProfile()
-      .then(profileData => {
-        //Dispatch Success
-        dispatch({
-          type: GET_PROFILE_SUCCESS,
-          payload: profileData
+    //Check for failed token retrieval
+    if (!anyFail(getState())) {
+      //Spotify API Profile Retrieval
+      return getProfile()
+        .then(profileData => {
+          //Dispatch Success
+          dispatch({
+            type: GET_PROFILE_SUCCESS,
+            payload: profileData
+          });
+        })
+        .catch(e => {
+          //Dispatch Fail
+          dispatch({ type: GET_PROFILE_FAIL });
+          //Log Out
+          dispatch(logOut());
         });
-      })
-      .catch(e => {
-        //Dispatch Fail
-        dispatch({ type: GET_PROFILE_FAIL });
-        //Log Out
-        dispatch(logOut());
-      });
+    }
   };
 };
 

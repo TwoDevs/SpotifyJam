@@ -4,10 +4,12 @@ import {
   SOCKET_CREATE_ROOM_LOADING,
   CONNECTED,
   SOCKET_LOG_OUT,
-  SOCKET_CREATE_ROOM
+  SOCKET_CREATE_ROOM,
+  SOCKET_REAUTH_FAIL,
+  SOCKET_AUTH_FAIL
 } from "../socket/socketConstants";
 
-import { selectUserReq, selectSocketUser } from "../selectors";
+import { selectUserReq, selectSocketUser, anyFail } from "../selectors";
 import { redirectToRoom } from "../API/historyFunctions";
 
 export const socketConnected = () => {
@@ -18,23 +20,31 @@ export const socketConnected = () => {
 
 export const socketAuthenticate = () => {
   return (dispatch, getState) => {
-    const user_req = selectUserReq(getState());
-    dispatch({ type: SOCKET_AUTH_LOADING });
-    dispatch({
-      type: "server/" + SOCKET_AUTH_LOADING,
-      payload: user_req
-    });
+    if (!anyFail(getState())) {
+      const user_req = selectUserReq(getState());
+      dispatch({ type: SOCKET_AUTH_LOADING });
+      dispatch({
+        type: "server/" + SOCKET_AUTH_LOADING,
+        payload: user_req
+      });
+    } else {
+      dispatch({ type: SOCKET_AUTH_FAIL });
+    }
   };
 };
 
 export const socketReauthenticate = () => {
   return (dispatch, getState) => {
-    const user_req = selectSocketUser(getState());
-    dispatch({ type: SOCKET_REAUTH_LOADING });
-    dispatch({
-      type: "server/" + SOCKET_REAUTH_LOADING,
-      payload: user_req
-    });
+    if (!anyFail(getState())) {
+      const user_req = selectSocketUser(getState());
+      dispatch({ type: SOCKET_REAUTH_LOADING });
+      dispatch({
+        type: "server/" + SOCKET_REAUTH_LOADING,
+        payload: user_req
+      });
+    } else {
+      dispatch({ type: SOCKET_REAUTH_FAIL });
+    }
   };
 };
 
