@@ -12,7 +12,7 @@ const buttonStyle = {
   borderColor: "#1DB954"
 };
 
-const serverURL = process.env.REACT_APP_SERVER_URL || "https://lit-shelf-90391.herokuapp.com";
+const serverURL = process.env.REACT_APP_SERVER_URL || "https://spotify-jam.herokuapp.com";
 
 const SplashCard = props => {
   console.log(serverURL);
